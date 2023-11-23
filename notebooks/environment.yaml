@@ -54,6 +54,8 @@ dependencies:
   - pyproj
   - shapely
   - basemap
+  - statsmodels
+  - scikit-learn
 
   - pip:
     - angles
