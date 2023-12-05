@@ -1,0 +1,31 @@
+# reshapr extract processing configuration (TEST)
+dataset:
+  model profile: SalishSeaCast-202111-salish.yaml
+  time base: hour
+  variables group: u velocity
+
+dask cluster: salish_cluster.yaml
+
+start date: 2023-01-01
+end date: 2023-01-14
+
+extract variables:
+  - vozocrtx
+ # - vomecrty
+ # - vovecrtz
+
+selection:
+  depth:
+    depth max: 40
+  grid y:
+    y min: 350
+    y max: 750
+  grid x:
+    x min: 115
+    x max: 340
+   
+
+extracted dataset:
+  name: SalishSeaCast_hourly_U_extracted
+  description: two weeks hourly data for U component of velocity from the SalishSeaCast 202111
+  dest dir: /ocean/vvalenzuela/MOAD/EOSC_510/test_extractions
