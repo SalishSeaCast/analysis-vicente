@@ -1,0 +1,55 @@
+# Conda enviroment for working with ocean parcels :) 
+# If necessary, multicore package are added at the end.
+name: Parcels
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - arrow
+  - bottleneck
+  - cliff
+  - cmocean
+  - coverage
+  - dask
+  - f90nml
+  - gsw
+  - ipdb
+  - ipython
+  - jupyterlab
+  - lxml
+  - matplotlib
+  - nbsphinx
+  - netCDF4
+  - numpy
+  - openpyxl
+  - pandas
+  - pip
+  - pytest
+  - python=3.11
+  - parcels=3.0
+  - pytz
+  - python-dateutil
+  - pyyaml
+  - requests
+  - retrying
+  - scipy
+  - sphinx
+  - sphinx_rtd_theme
+  - tqdm
+  - xarray
+  - cartopy
+  - pillow
+  - pyproj
+  - shapely
+  - basemap
+  - statsmodels
+  - scikit-learn
+  - yaml
+  - zarr
+  - mpich
+  - mpi4py
+
+  - pip:
+    - angles
