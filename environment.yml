@@ -27,7 +27,7 @@ dependencies:
   - pandas
   - pip
   - pytest
-  - python=3.11
+  - python
   - parcels=3.0
   - pytz
   - python-dateutil
