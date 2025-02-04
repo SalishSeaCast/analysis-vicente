@@ -314,9 +314,9 @@ def simulation_run(start_time, sim_length, number_particles, dt_resolution):
                 particle.status = 4
     #
     #### OTHERS ####
-    def export(particle,fieldset,time):
-        if particle.lat<48.7 and particle.lon < -124.66:
-            particle.status = 7
+    #def export(particle,fieldset,time):
+    #    if particle.lat<48.7 and particle.lon < -124.66:
+    #        particle.status = 7
     #
     def CheckOutOfBounds(particle, fieldset, time):
         if particle.state == StatusCode.ErrorOutOfBounds:    
