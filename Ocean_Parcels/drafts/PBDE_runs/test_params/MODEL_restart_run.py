@@ -5,7 +5,8 @@
 #
 # An initial source point is located in the Iona Outfall diffusers coordinates at around 70 m depth.
 #
-# This version releases particles every hour for a certain amount of days (INPUT)
+# This version follows up with initial potitions from the last
+# trajectories of other simulations
 #
 import sys
 import random
@@ -145,7 +146,7 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
         e3t_val = Variable('e3t_val', initial=np.nan)
         log_e3t = Variable('log_e3t', initial=np.nan)
         log_z_star = Variable('log_z_star', initial = math.log(0.07))
-        k_constant = Variable('k_constant', initial = (0.42 ** 2))
+        k_constant = Variable('k_constant', initial = 0.42)
         tau_values = Variable('tau_values', initial = np.nan)
         u_star = Variable('u_star', initial = np.nan)
         u_vel = Variable('u_vel', initial = np.nan)
@@ -154,7 +155,21 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
         deg2met = Variable('deg2met', initial = 111319.5)
         latT = Variable('latT', initial = 0.6495)
         threshold = Variable('threshold', initial = 0.05)
-        times_release = Variable('time_release', initial = 3600 * days_release * 24)
+    ########   
+    ### LOAD THE LAST FILE AND GET THE LAST TRAJECTORIES AND STATUS ###  
+    ds = xr.open_dataset(restart,decode_times=False)
+    st = int(ds.time[0,-1].values)
+    year,month,day = ds.time.units.split(' ')[2].split('-')
+    day = day.split('T')[0]
+    restartT = datetime(int(year), int(month), int(day))+ timedelta(seconds= st)
+    DS = ds.to_dataframe()
+    dslast = DS[DS.time==st]
+    dslast = dslast[dslast.status == 1]
+    
+######RUN OCEAN PARCELS WITH DEFINED PARTICLE AND PRESET FIELDS 
+    pset = ParticleSet.from_list(field_set, MPParticle, lon=dslast.lon, lat=dslast.lat, depth=dslast.z,time=restartT+timedelta(hours=1))
+    print('load particles successful')
+    ########
     #
     pset_states = ParticleSet.from_list(field_set, MPParticle, lon=lon, lat=lat,
     depth=depth, time=time)           
@@ -187,11 +202,11 @@ if __name__ == "__main__":
     start_time = datetime.strptime(start_time_str, "%Y-%m-%dT%H:%M:%S")
     #
     #### this is for avoiding time overlapping #### 
-    #total_days = length_sim + (number_of_days_release*2)
+    total_days = length_sim + (number_of_days_release*2)
     #
-    print(f"PBDEs_OP_run simulation for {length_sim} days, releasing {number_of_particles_per_release} particles every 1 hour for {number_of_days_release} days from the starting date {start_time}")
+    print(f"PBDEs_OP_run simulation for {total_days} days, releasing {number_of_particles_per_release} particles every 1 hour for {number_of_days_release} days from the starting date {start_time}")
     #
-    PBDEs_OP_run(start_time, length_sim, number_of_particles_per_release, number_of_days_release, delta_t)
+    PBDEs_OP_run(start_time, total_days, number_of_particles_per_release, number_of_days_release, delta_t)
     #
     ## How to run in the terminal:
     # python -m MODEL_hourly_V1 start_time_str length_sim number_particles days_release delta_t

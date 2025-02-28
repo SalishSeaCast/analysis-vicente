@@ -3,6 +3,7 @@
 #
 #
 def PBDEs_states(particle, fieldset, time):
+    #print('PBDEs_states kernel is running')
     if particle.initialized == 0:#particle.time <= 3600
         n = particle.n 
         # n is the total amount of particles released at the starting location
@@ -16,7 +17,8 @@ def PBDEs_states(particle, fieldset, time):
         else:
             particle.status = 2
         #
-        particle.initialized = 1
+        if particle.time > (particle.time_release):
+            particle.initialized = 1    
         #print('Particle Initialized = 0')    
     else: #particle.time > 3600:
         abso = 0.7/(24)#0.038/(24) #per hour
@@ -41,6 +43,7 @@ def PBDEs_states(particle, fieldset, time):
 #
 #### PBDEs states sinking velocities features ####
 def PBDEs_forms(particle, fieldset, time):
+    #print('PBDEs_forms kernel is running')
     #
     #dt_h = 1 / 3600
     dt_h = (math.fabs(particle.dt)/math.fabs(particle.dt)) / 3600 # forcing to have a 1 second resolution
@@ -57,7 +60,8 @@ def PBDEs_forms(particle, fieldset, time):
         particle.depth += sinkvel * particle.dt 
 #
 #### ADVECTION ####
-def Advection(particle, fieldset, time): 
+def Advection(particle, fieldset, time):
+    #print('Advection kernel is running') 
     # Advection for all PBDEs in status 1, 2 and 3
     if particle.status == 1 or particle.status == 2 or particle.status == 3: 
         ssh = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
@@ -66,29 +70,38 @@ def Advection(particle, fieldset, time):
         particle.fact = (1+ssh/td)
         VVL = (sshn-ssh)*particle.depth/(td)
         #VVL = (sshn-ssh)*particle.depth/(td+ssh)
+        #
+        # calculate once and reuse
+        dt_factor = 0.5 * particle.dt / particle.fact
         (u1, v1, w1) = fieldset.UVW[time, particle.depth, particle.lat, particle.lon]
         lon1 = particle.lon + u1*.5*particle.dt
         lat1 = particle.lat + v1*.5*particle.dt
-        dep1 = particle.depth + w1*.5*particle.dt/particle.fact
+        dep1 = particle.depth + w1 * dt_factor
+        #
         (u2, v2, w2) = fieldset.UVW[time + .5 * particle.dt, dep1, lat1, lon1]
         lon2 = particle.lon + u2*.5*particle.dt
         lat2 = particle.lat + v2*.5*particle.dt
-        dep2 = particle.depth + w2*.5*particle.dt/particle.fact
+        dep2 = particle.depth + w2 * dt_factor
+        #
         (u3, v3, w3) = fieldset.UVW[time + .5 * particle.dt, dep2, lat2, lon2]
         lon3 = particle.lon + u3*particle.dt
         lat3 = particle.lat + v3*particle.dt
-        dep3 = particle.depth + w3*particle.dt/particle.fact
+        dep3 = particle.depth + w3 * dt_factor
+        #
         (u4, v4, w4) = fieldset.UVW[time + particle.dt, dep3, lat3, lon3]
+        #
         wa = (w1 + 2*w2 + 2*w3 + w4) /6.
         particle.wa = wa* particle.dt
         particle_dlon = (u1 + 2*u2 + 2*u3 + u4) / 6. * particle.dt
         particle_dlat = (v1 + 2*v2 + 2*v3 + v4) / 6. * particle.dt
         particle_ddepth = particle.wa/particle.fact + VVL
+        #
         if particle_ddepth + particle.depth < 0:
             particle_ddepth = - (2*particle.depth+particle_ddepth)
 #
 #### TURBULENT MIX ####
 def turb_mix(particle,fieldset,time):
+    #print('Turb_mix kernel is running')
     if particle.status == 1 or particle.status == 2 or particle.status == 3:
         """Vertical mixing"""
         #Vertical mixing
@@ -109,6 +122,7 @@ def turb_mix(particle,fieldset,time):
 #
 #### VERTICAL DISPLACEMENT ####
 def Displacement(particle,fieldset,time):
+    #print('Displacement kernel is running')
     if particle.status == 1 or particle.status == 2 or particle.status == 3:
         #Apply turbulent mixing.
         if dzs + particle_ddepth + particle.depth > td:
@@ -123,21 +137,38 @@ def Displacement(particle,fieldset,time):
 #
 #### RESUSPENSION ####
 def resuspension(particle, fieldset, time):
+    # Note: U, V and e3t particle.depth are in meters, so I cannot use mbathy as an index, since this gives me Z levels, not depth!!
+    # Since when particle.status == 4 the particle depth is set as the Total Depth. Therefore, if we do total depth - e3t we will get the depth of the second last grid cell...
+    # which is the one that we want for the U and V calculations used in getting U_star!!
     if particle.status == 4:
-        threshold = 1 # threshold for particles to know when to resuspend
-        # Calculation of U_star, which is proportional to the bottom stress (tau)
-        k = 0.42
-        z_star = 0.07
-        u_horizontal = (1/4) * (fieldset.U[time, fieldset.mbathy[time, particle.depth, particle.lat, particle.lon] - 1, particle.lat, particle.lon] + fieldset.U[time, fieldset.mbathy[time, particle.depth, particle.lat, particle.lon] - 1, particle.lat, particle.lon -1]) ** 2
-        v_horizontal = (1/4) * (fieldset.V[time, fieldset.mbathy[time, particle.depth, particle.lat, particle.lon] - 1, particle.lat, particle.lon] + fieldset.U[time, fieldset.mbathy[time, particle.depth, particle.lat, particle.lon] - 1, particle.lat - 1, particle.lon]) ** 2
-        vel_horizontal = (u_horizontal + v_horizontal) ** (1/2)
+    # If particle moves in depth, lon or lat, then update, if not, keep constant:
+        if (particle.depth != particle.prev_depth or 
+            particle.lat != particle.prev_lat or 
+            particle.lon != particle.prev_lon):
+            #              
+            particle.e3t_val = fieldset.e3t[0, particle.depth, particle.lat, particle.lon]  # Update e3t if particle moves
+            particle.log_e3t = math.log(particle.e3t_val * 0.5)  # Update log term if particle moves
+            #    
+            # Save previous location to keep it consistent
+            particle.prev_depth = particle.depth
+            particle.prev_lat = particle.lat
+            particle.prev_lon = particle.lon
+            #
+        #  get the depth of the second last grid cell
+        bat_particle = particle.depth - .5 *particle.e3t_val 
         #
-        u_star = (vel_horizontal * k) / ((math.log(fieldset.e3t[time, fieldset.mbathy[time, particle.depth, particle.lat, particle.lon] -1, particle.lat, particle.lon] / 2) / z_star))
-        # Here tau is the bottom friction parameter estimated from (u_starr)^2 x density
-        tau = ((u_star) ** 2) * 1024
-        #
-        #
-        if tau >= threshold: # for colloids and marine particles
+        # Velocity in m/s
+        u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * (particle.deg2met * particle.latT)
+        particle.u_vel = u_vel
+        v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * (particle.deg2met)
+        particle.v_vel = v_vel
+        # Horizontal velocity        
+        # Algebraic arange for more efficiency
+        TAU = ((u_vel ** 2) + (v_vel) ** 2) * (particle.k_constant) * ((particle.log_e3t - particle.log_z_star) ** (-2)) * 1024
+        # Store Tau to see the numbers
+        particle.tau_values = TAU
+        # Apply resuspension 
+        if TAU >= particle.threshold: # for colloids and marine particles
             frac_value = ParcelsRandom.randint(0,10)
             if frac_value >= 3:
                 particle.status = 2
@@ -145,7 +176,7 @@ def resuspension(particle, fieldset, time):
                 particle.status = 3    
         #    
         else:  # for particles staying at the bottom
-            particle.status = 4
+            particle.status = 4          
 #
 #### OTHERS ####
 def export(particle,fieldset,time):
