@@ -6,18 +6,18 @@ def PBDEs_states(particle, fieldset, time):
     #
     if particle.release_time <= 0:
         particle.release_time = particle.time
-
+    # Particle.release_time is the internal time where particles are being added     
     # 
+    # the next if statement change to status 1 or 2 at the time of release without overwritting older particles
     if particle.time == particle.release_time:
         if ParcelsRandom.uniform(0, 1) < 0.75:  # 75% chance for status 1
             particle.status = 1  # Sewage Particle
         else:
             particle.status = 2  # Colloidal/Dissolved PBDEs
     else:
-    # Precompute values outside of conditions
+    #
         random_value = ParcelsRandom.random()
-
-        # Transition Probabilities (per hour)
+        # Absorption and desoprtion (per hour)
         abso = 0.7 / 24   # Colloidal/Dissolved → Attached to Marine Particle
         deso_s = 3.2 / 24 # Sewage Particle → Colloidal/Dissolved
         deso_m = 1.8 / 24 # Marine Particle → Colloidal/Dissolved
