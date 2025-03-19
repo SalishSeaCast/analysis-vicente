@@ -76,7 +76,7 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
     depth = [z] * num_releases * n_hourly
     time = [release_time for release_time in release_times for _ in range(n_hourly)]
     #
-    a, b = finder(clat[0], clon[0])
+    #a, b = finder(clat[0], clon[0])
     #print ("The total depth at this location is", mask.totaldepth[a, b].values, 'm')
     #
     duration = timedelta(days=sim_length) # RUN DURATION IN DAYS
@@ -88,7 +88,7 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
     fn =  name_states + '_'.join(d.strftime('%Y%m%d')+'_1n' for d in [start_time, start_time+duration]) + '.zarr'
     outfile_states = os.path.join(path['out'], fn)
     #
-    local = 0
+    #local = 0
     ####
     ####
     ####
@@ -150,11 +150,13 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
         u_star = Variable('u_star', initial = np.nan)
         u_vel = Variable('u_vel', initial = np.nan)
         v_vel = Variable('v_vel', initial = np.nan)
-        horizontal_vel = Variable('horizontal_vel', initial = np.nan)
+        h_vel = Variable('h_vel', initial = np.nan)
         deg2met = Variable('deg2met', initial = 111319.5)
         latT = Variable('latT', initial = 0.6495)
         threshold = Variable('threshold', initial = 0.05)
         times_release = Variable('time_release', initial = 3600 * days_release * 24)
+        release_time = Variable('release_time', dtype=np.float64)
+        dt_h = Variable('dt_h', initial = 1/3600)
     #
     pset_states = ParticleSet.from_list(field_set, MPParticle, lon=lon, lat=lat,
     depth=depth, time=time)           
@@ -179,14 +181,14 @@ if __name__ == "__main__":
     print("RUNNING PBDEs_OP_run! :D")
     # Input from the terminal
     start_time_str = sys.argv[1]  # Example: "2022-01-01T00:00:00"
-    length_sim = int(sys.argv[2]) # Example: 10
     number_of_particles_per_release = int(sys.argv[3]) # Example: 5  
-    number_of_days_release = int(sys.argv[4]) # Example: 2   
+    number_of_days_release = int(sys.argv[4]) # Example: 2  
+    length_sim = int(sys.argv[2]) + number_of_days_release # Example: 10 
     delta_t = int(sys.argv[5]) # Example: 40 [in seconds]
     # Convert start_time_str to datetime
     start_time = datetime.strptime(start_time_str, "%Y-%m-%dT%H:%M:%S")
     #
-    #### this is for avoiding time overlapping #### 
+    #### this is for avoiding time overlapping ####
     #total_days = length_sim + (number_of_days_release*2)
     #
     print(f"PBDEs_OP_run simulation for {length_sim} days, releasing {number_of_particles_per_release} particles every 1 hour for {number_of_days_release} days from the starting date {start_time}")

@@ -2,57 +2,41 @@
 ### Ocean Parcels Kernels for PBDEs Simulations ###    
 #
 #
-def InitializeKernel(particle, fieldset, time):
-    if particle.release_time == 0:  
-        particle.release_time = particle.time 
-#
-def PBDEs_states(particle, fieldset, time):
-    #print('PBDEs_states kernel is running')
-    if particle.initialized == 0:#particle.time <= 3600
-        n = particle.n 
-        # n is the total amount of particles released at the starting location
-        data = ParcelsRandom.randint(0, n-1)
-        #
-        # PBDEs as Sewage Particles
-        if data < 3*(n/4):
-            particle.status = 1
-        #
-        # Colloidal/Dissolved PBDEs
+def PBDEs_states(particle, fieldset, time):    
+    #
+    if particle.release_time <= 0:
+        particle.release_time = particle.time
+
+    # 
+    if particle.time == particle.release_time:
+        if ParcelsRandom.uniform(0, 1) < 0.75:  # 75% chance for status 1
+            particle.status = 1  # Sewage Particle
         else:
-            particle.status = 2
-        #
-        #if particle.time > (particle.time_release):
-        #    particle.initialized = 1    
-        #print('Particle Initialized = 0')    
-    else: #particle.time > 3600:
-        abso = 0.7/(24)#0.038/(24) #per hour
-        deso_s = 3.2/(24) #per hour
-        deso_m = 1.8/(24)#1.6/(24) #per hour
-        #dt_h = 1 / 3600
-        dt_h = (math.fabs(particle.dt)/math.fabs(particle.dt)) / 3600 # forcing to have a 1 second resolution
-        value = ParcelsRandom.random()# * dt_h
-        #
-        #value = ParcelsRandom.random() * dt_h
-        if particle.status == 2:
-            if value < 1 - math.exp(-abso * dt_h):
-                particle.status = 3
-            # From Coloidal/Dissolved form to being attached to a Marine Particle           
-        elif particle.status == 1:
-            if value < 1 - math.exp(-deso_s * dt_h):
-                particle.status = 2
-            # From Sewage Particle to Colloidal/Dissolved PBDE form
-        elif particle.status == 3:
-            if value < 1 - math.exp(-deso_m * dt_h):
-                particle.status = 2
-#
+            particle.status = 2  # Colloidal/Dissolved PBDEs
+    else:
+    # Precompute values outside of conditions
+        random_value = ParcelsRandom.random()
+
+        # Transition Probabilities (per hour)
+        abso = 0.7 / 24   # Colloidal/Dissolved → Attached to Marine Particle
+        deso_s = 3.2 / 24 # Sewage Particle → Colloidal/Dissolved
+        deso_m = 1.8 / 24 # Marine Particle → Colloidal/Dissolved
+
+        # Status updates
+        if particle.status == 2 and random_value < 1 - math.exp(-abso * particle.dt_h):
+            particle.status = 3  # Becomes attached to Marine Particle
+        elif particle.status == 1 and random_value < 1 - math.exp(-deso_s * particle.dt_h):
+            particle.status = 2  # Becomes Colloidal/Dissolved
+        elif particle.status == 3 and random_value < 1 - math.exp(-deso_m * particle.dt_h):
+            particle.status = 2  # Returns to Colloidal/Dissolved
+    #
 #### PBDEs states sinking velocities features ####
 def PBDEs_forms(particle, fieldset, time):
     #print('PBDEs_forms kernel is running')
     #
     #dt_h = 1 / 3600
-    dt_h = 1 / 3600 # forcing to have a 1 second resolution
     if particle.status == 1:
-        sinkvel = 50*(dt_h) # m/hr * dt --> to seconds
+        sinkvel = 50*(particle.dt_h) # m/hr * dt --> to seconds
         particle.depth += sinkvel * particle.dt
     #Sewage Particles sink fast        
     elif particle.status == 2:
@@ -60,7 +44,7 @@ def PBDEs_forms(particle, fieldset, time):
         particle.depth += sinkvel * particle.dt
     # Colloids just float around and move with advection
     elif particle.status == 3:
-        sinkvel = 10*(dt_h) # m/hr * dt --> to seconds
+        sinkvel = 10*(particle.dt_h) # m/hr * dt --> to seconds
         particle.depth += sinkvel * particle.dt 
 #
 #### ADVECTION ####
@@ -140,52 +124,42 @@ def Displacement(particle,fieldset,time):
             particle_ddepth += dzs #apply mixing
 #
 #### RESUSPENSION ####
+
 def resuspension(particle, fieldset, time):
-    # Note: U, V and e3t particle.depth are in meters, so I cannot use mbathy as an index, since this gives me Z levels, not depth!!
-    # Since when particle.status == 4 the particle depth is set as the Total Depth. Therefore, if we do total depth - e3t we will get the depth of the second last grid cell...
-    # which is the one that we want for the U and V calculations used in getting U_star!!
+    # Only proceed if particle is at the seabed (status 4)
     if particle.status == 4:
-    # If particle moves in depth, lon or lat, then update, if not, keep constant:
+        # Update e3t value only if the particle moved
         if (particle.depth != particle.prev_depth or 
             particle.lat != particle.prev_lat or 
             particle.lon != particle.prev_lon):
-            #              
-            particle.e3t_val = fieldset.e3t[0, particle.depth, particle.lat, particle.lon]  # Update e3t if particle moves
-            #    
-            # Save previous location to keep it consistent
+            #
+            particle.e3t_val = fieldset.e3t[0, particle.depth, particle.lat, particle.lon]  # Update e3t
             particle.prev_depth = particle.depth
             particle.prev_lat = particle.lat
-            particle.prev_lon = particle.lon
-            #
-        #  get the depth of the second last grid cell
-        bat_particle = particle.depth - .5 *particle.e3t_val 
+            particle.prev_lon = particle.lon  
         #
-        # Velocity in m/s
-        u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * (particle.deg2met * particle.latT)
-        particle.u_vel = u_vel
-        v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * (particle.deg2met)
-        particle.v_vel = v_vel
-        # Horizontal velocity 
-        H_vel_2 = (u_vel ** 2 + v_vel ** 2) #** (0.5)   
-        particle.h_vel = H_vel_2    
-        # Algebraic arange for more efficiency
-        #particle.log_e3t = math.log(particle.e3t_val * 0.5)  # Update log term if particle moves
-        #TAU = ((u_vel ** 2) + (v_vel) ** 2) * (particle.k_constant) * ((particle.log_e3t - particle.log_z_star) ** (-2)) * 1024
-        # Store Tau to see the numbers
-        #particle.tau_values = TAU
+        bat_particle = particle.depth - 0.5 * particle.e3t_val  
         #
-        # Apply resuspension 
+        # horizontal velocities in m/s  
+        u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * particle.deg2met * particle.latT
+        v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * particle.deg2met
+        # squared horizontal velocity
+        H_vel_2 = u_vel**2 + v_vel**2  
+        particle.h_vel = H_vel_2  
+
+        # Apply resuspension only if velocity exceeds threshold
         if H_vel_2 > 0.00029:
-            # Add calculation of TAU
-        #if TAU >= particle.threshold: # for colloids and marine particles
-            frac_value = ParcelsRandom.randint(0,10)
-            if frac_value >= 3:
-                particle.status = 2
+            log_e3t = math.log(particle.e3t_val * 0.5)  
+            TAU = H_vel_2 * particle.k_constant * ((log_e3t - particle.log_z_star) ** (-2)) * 1024  
+            particle.tau_values = TAU  
+
+            # Resuspension probability (30% for marine particles, 70% for colloidal)
+            if ParcelsRandom.uniform(0, 1) >= 0.3:
+                particle.status = 2  # Colloidal/Dissolved PBDEs
             else:
-                particle.status = 3    
-        #    
-        else:  # for particles staying at the bottom
-            particle.status = 4          
+                particle.status = 3  # Marine Particles
+        else:
+            particle.status = 4  # Particle remains at the seabed         
 #
 #### OTHERS ####
 def export(particle,fieldset,time):
