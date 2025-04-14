@@ -22,7 +22,7 @@ import zarr
 #
 sys.path.append('/ocean/vvalenzuela/MOAD/Ocean_Parcels')
 #
-from OP_functions import *
+from OP_functions_shared import *
 #
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -152,19 +152,13 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
         else:
             release_status_array[i] = 2
     ###
-    # idea: set hourly times and 2 hours times to get a process into an interval between the 2 hours release of particles
-    #hour_times = np.arange(-1800, 3600 * 24 * days_release, 3600)
-    ###
     ### Release times based on Kernels time:
     values = np.arange(-1800, 23 * 3600 * days_release, 3600 ) # 2 of 2 hours per release
     repeats = n_hourly
     hour_times = np.repeat(values, repeats)
     ####
-    # Another idea
-    valores = np.arange(0, 24 * days_release)
-    markers = np.repeat(valores, repeats)
     ####
-    release_time_array = np.repeat(np.arange(0, 24 * days_release * 3600, 3600), n_hourly)
+    #release_time_array = np.repeat(np.arange(0, 24 * days_release * 3600, 3600), n_hourly)
     ####
     #### PROBABILITIES FOR ABSORPTION AND DESORPTION ####
     abso = 0.038 / 24   # Colloidal/Dissolved → Attached to Marine Particle
@@ -220,13 +214,10 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
         dt_h = Variable('dt_h', initial = 1/3600)
         release_state =  Variable('release_state', dtype = np.float64)
         release_hours = Variable('release_hours', initial = hour_times)
-        flag = Variable('flag', dtype = np.float64, initial = markers)
-        released = Variable('released', initial=0)
         release_status = Variable('release_status')
-        age_h = Variable('age_h', dtype=np.float64)
     #
     pset_states = ParticleSet.from_list(field_set, MPParticle, lon=lon, lat=lat,
-    depth=depth, time=time, status = status, release_time=list(release_time_array))           
+    depth=depth, time=time, status = status)           
     ##########################################################
     #
     #

@@ -5,28 +5,14 @@
 #
 def PBDEs_states(particle, fieldset, time):    
     #   
-    # Particle.release_time is the internal time where particles are being added (example: 0 3600 7200, etc)    
-    #
-    # INITIAL STATUS FORCED FROM OUTSIDE THE KERNEL
-        #particle.status = particle.status_initial # initialized with 75% for status 1 and 25% for status 2 
-    #
-    #    
-#    particle.age_h = (particle.time - particle.release_time) / 3600.0
-    #    particle.release_time = particle.time
-    # If the particle has just been released (for example, within one time step)
-    # then ensure that its status reflects the release status.
-#    if particle.age_h < particle.dt_h:
-        # Optionally, you can force the status to equal release_status.
-        # This way, if you're outputting at the release hour, you'll see the original value.
-#        particle.status = particle.release_status
-    if particle.time < 10000:
+    # 
+    if particle.time < 10000: # just a random test to see how the output behaves with status variable
         particle.status = 0
     #
     else:     
     #    
         random_value = ParcelsRandom.random()
         # Absorption and desoprtion (per hour)
-
         # Status updates
         if particle.status == 2 and random_value < particle.abso_probability:
             particle.status = 3  # Becomes attached to Marine Particle
@@ -150,7 +136,7 @@ def resuspension(particle, fieldset, time):
         #TAU = H_vel_2 * particle.k_constant * ((particle.log_e3t - particle.log_z_star) ** (-2)) * 1024  
         #particle.tau_values = TAU
         # 
-        # Intentar definir una aproximacion lineal para no tener que calcular el logaritmo!!! Te ahorrarias mucho tiempo de simulacion!!!
+        # Aproximation to avoid heavy Kernel?
         factor = 1 + (fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] / particle.depth) #SSH(t) sea surface height
         particle.log_e3t = math.log(particle.e3t_val * factor * 0.5)  
  
