@@ -22,21 +22,13 @@ def PBDEs_states(particle, fieldset, time):
             particle.status = 2  # Returns to Colloidal/Dissolved
             #
 #### PBDEs states sinking velocities features ####
-def PBDEs_forms(particle, fieldset, time):
-    #print('PBDEs_forms kernel is running')
-    #
-    #dt_h = 1 / 3600
+def Sinking(particle, fieldset, time):
     if particle.status == 1:
-        sinkvel = 21*(particle.dt_h) # m/hr * dt --> to seconds --> ~ 500 m/d
-        particle.depth += sinkvel * particle.dt
+        particle_ddepth += sinkvel_sewage * particle.dt
     #Sewage Particles sink fast        
-    elif particle.status == 2:
-        sinkvel = 0.0
-        particle.depth += sinkvel * particle.dt
-    # Colloids just float around and move with advection
     elif particle.status == 3:
-        sinkvel = 10*(particle.dt_h) # m/hr * dt --> to seconds --> ~ 250 m/d
-        particle.depth += sinkvel * particle.dt 
+        particle_ddepth += sinkvel_marine * particle.dt 
+    
 #
 #### ADVECTION ####
 def Advection(particle, fieldset, time):
@@ -46,8 +38,8 @@ def Advection(particle, fieldset, time):
         ssh = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
         sshn = fieldset.sossheig[time+particle.dt, particle.depth, particle.lat, particle.lon] #SSH(t+dt) sea surface height in the next time step
         td = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon]#Total_depth 
-        particle.fact = (1+ssh/td)
-        VVL = (sshn-ssh)*particle.depth/(td)
+        particle.fact = (1 + ssh / td)
+        VVL = (sshn - ssh) * particle.depth / td
         #VVL = (sshn-ssh)*particle.depth/(td+ssh)
         #
         # calculate once and reuse
@@ -76,40 +68,37 @@ def Advection(particle, fieldset, time):
         particle_ddepth = particle.wa/particle.fact + VVL
         #
         if particle_ddepth + particle.depth < 0:
-            particle_ddepth = - (2*particle.depth+particle_ddepth)
+            particle_ddepth = - (2 * particle.depth + particle_ddepth)
 #
 #### TURBULENT MIX ####
 def turb_mix(particle,fieldset,time):
-    #print('Turb_mix kernel is running')
     if particle.status == 1 or particle.status == 2 or particle.status == 3:
         """Vertical mixing"""
         #Vertical mixing
-        if particle.depth + 0.5/particle.fact > td: #Only calculate gradient of diffusion for particles deeper than 0.5 otherwise OP will check for particles outside the domain and remove it.
-            Kzdz = 2*(fieldset.vert_eddy_diff[time, particle.depth, particle.lat, particle.lon]-fieldset.vert_eddy_diff[time, particle.depth-0.5/particle.fact, particle.lat, particle.lon]) #backwards difference 
+        td = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon] #Total_depth (can't share, unless I set it for the particle)
+        if particle.depth + 0.5 / particle.fact > td: #Only calculate gradient of diffusion for particles deeper than 0.5 otherwise OP will check for particles outside the domain and remove it.
+            Kzdz = 2 * (fieldset.vert_eddy_diff[time, particle.depth, particle.lat, particle.lon] 
+                        - fieldset.vert_eddy_diff[time, particle.depth-0.5/particle.fact, particle.lat, particle.lon]) #backwards difference 
         else: 
-            Kzdz = 2*(fieldset.vert_eddy_diff[time, particle.depth+0.5/particle.fact, particle.lat, particle.lon]-fieldset.vert_eddy_diff[time, particle.depth, particle.lat, particle.lon]) #forward difference 
-        dgrad = Kzdz*particle.dt/particle.fact
-        if particle.depth+(0.5*dgrad) > 0 and particle.depth+(0.5*dgrad) < td:
-            Kz = fieldset.vert_eddy_diff[time, particle.depth+ 0.5*dgrad, particle.lat, particle.lon] #Vertical diffusivity SSC  
+            Kzdz = 2 * (fieldset.vert_eddy_diff[time, particle.depth+0.5/particle.fact, particle.lat, particle.lon]
+                        - fieldset.vert_eddy_diff[time, particle.depth, particle.lat, particle.lon]) #forward difference 
+        dgrad = Kzdz * particle.dt / particle.fact
+        if particle.depth + (0.5 * dgrad) > 0 and particle.depth + (0.5 * dgrad) < td:
+            Kz = fieldset.vert_eddy_diff[time, particle.depth+0.5*dgrad, particle.lat, particle.lon] #Vertical diffusivity SSC  
         else:
             Kz = 0 
         #
         Rr = ParcelsRandom.uniform(-1, 1)
-        d_random = sqrt(3*2*Kz*particle.dt) * Rr/particle.fact
+        d_random = sqrt(3 * 2 * Kz * particle.dt) * Rr / particle.fact
         dzs = (dgrad + d_random)
-        particle.wm = dzs*particle.fact
-#
-#### VERTICAL DISPLACEMENT ####
-def Displacement(particle,fieldset,time):
-    #print('Displacement kernel is running')
-    if particle.status == 1 or particle.status == 2 or particle.status == 3:
+        
         #Apply turbulent mixing.
         if dzs + particle_ddepth + particle.depth > td:
             particle.depth  = td # Get particles attached to the bottom when they reach it
             particle.status = 4
-            particle.e3t_val = fieldset.e3t[0, particle.depth, particle.lat+particle_dlat, particle.lon+particle_dlon]  # Update e3t
+ #ADD LATER!!!           particle.e3t_val = fieldset.e3t[0, particle.depth, particle.lat+particle_dlat, particle.lon+particle_dlon]  # Update e3t
             #
-        elif dzs + particle.depth+ particle_ddepth < 0:
+        elif dzs + particle.depth + particle_ddepth < 0:
             particle_ddepth = -(dzs + particle.depth+particle_ddepth) #reflection on surface
         #
         else:
