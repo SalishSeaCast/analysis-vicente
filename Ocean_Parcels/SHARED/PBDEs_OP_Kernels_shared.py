@@ -4,30 +4,28 @@
 # Force kernels to not move particles when not released!! <---- Not to move or change state
 #
 def PBDEs_states(particle, fieldset, time):    
-    #   
-    # 
-    if particle.time < 10000: # just a random test to see how the output behaves with status variable
-        particle.status = 0
-    #
-    else:     
-    #    
-        random_value = ParcelsRandom.random()
+        
+    if (time > particle.release_time):
+        if particle.status < 0:
+            particle.status = - particle.status
+        elif (particle.status < 4):
+            random_value = ParcelsRandom.random()
         # Absorption and desoprtion (per hour)
         # Status updates
-        if particle.status == 2 and random_value < particle.abso_probability:
-            particle.status = 3  # Becomes attached to Marine Particle
-        elif particle.status == 1 and random_value < particle.deso_s_probability:
-            particle.status = 2  # Becomes Colloidal/Dissolved
-        elif particle.status == 3 and random_value < particle.deso_m_probability:
-            particle.status = 2  # Returns to Colloidal/Dissolved
-            #
+            if particle.status == 1 and random_value < fieldset.deso_s_probability:
+                particle.status = 2  # Becomes Colloidal/Dissolved
+            elif particle.status == 2 and random_value < fieldset.abso_probability:
+                particle.status = 3  # Becomes attached to Marine Particle
+            elif particle.status == 3 and random_value < fieldset.deso_m_probability:
+                particle.status = 2  # Returns to Colloidal/Dissolved
+            
 #### PBDEs states sinking velocities features ####
 def Sinking(particle, fieldset, time):
     if particle.status == 1:
-        particle_ddepth += sinkvel_sewage * particle.dt
+        particle_ddepth += fieldset.sinkvel_sewage * particle.dt
     #Sewage Particles sink fast        
     elif particle.status == 3:
-        particle_ddepth += sinkvel_marine * particle.dt 
+        particle_ddepth += fieldset.sinkvel_marine * particle.dt 
     
 #
 #### ADVECTION ####
