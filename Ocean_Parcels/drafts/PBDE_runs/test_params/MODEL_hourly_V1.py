@@ -28,7 +28,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 #
 #
-def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t):
+def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t, R_interval):
     #### DATA AND OUTPUT PATHS ####
     path = {'NEMO': '/results2/SalishSea/nowcast-green.202111/',
     'coords': '/ocean/vvalenzuela/MOAD/grid/coordinates_seagrid_SalishSea201702.nc',
@@ -84,7 +84,7 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
     #
     #
     #### Name of the output file #### 
-    name_states = 'PBDEs_run_for_'+str(sim_length)+'_days_'+str(n_hourly)+'_hourly_particles_'
+    name_states = 'PBDEs_run_for_'+str(sim_length)+'_days_'+str(n_hourly)+'_hourly_particles_'+str(R_interval*60)+'_min_R_interval'
     daterange = [start_time+timedelta(days=i) for i in range(sim_length)]
     fn =  name_states + '_'.join(d.strftime('%Y%m%d')+'_1n' for d in [start_time, start_time+duration]) + '.zarr'
     outfile_states = os.path.join(path['out'], fn)
@@ -223,7 +223,9 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
         flag = Variable('flag', dtype = np.float64, initial = markers)
         released = Variable('released', initial=0)
         release_status = Variable('release_status')
-        age_h = Variable('age_h', dtype=np.float64)
+        #
+        time_resuspension = Variable('time_resuspension', initial = 0.0)
+        resuspension_interval = Variable('resuspension_interval', initial = R_interval) # 10 minutes, 5 minutes and 2 minutes 
     #
     pset_states = ParticleSet.from_list(field_set, MPParticle, lon=lon, lat=lat,
     depth=depth, time=time, status = status, release_time=list(release_time_array))           
@@ -234,8 +236,8 @@ def PBDEs_OP_run(start_time, sim_length, number_particles, days_release, delta_t
     dt = delta_t     # Simulation timestep in seconds
     output_interval = timedelta(hours=1)
     output_file = pset_states.ParticleFile(name=outfile_states, outputdt=output_interval)
-    #kernels = pset_states.Kernel(PBDEs_states) +  pset_states.Kernel(PBDEs_forms) + pset_states.Kernel(Advection) + pset_states.Kernel(turb_mix) + pset_states.Kernel(Displacement) + pset_states.Kernel(resuspension) + pset_states.Kernel(CheckOutOfBounds) + pset_states.Kernel(KeepInOcean)
-    kernels = pset_states.Kernel(PBDEs_states)
+    kernels = pset_states.Kernel(PBDEs_states) +  pset_states.Kernel(PBDEs_forms) + pset_states.Kernel(Advection) + pset_states.Kernel(turb_mix) + pset_states.Kernel(Displacement) + pset_states.Kernel(resuspension) + pset_states.Kernel(CheckOutOfBounds) + pset_states.Kernel(KeepInOcean)
+    #kernels = pset_states.Kernel(PBDEs_states)
     #
     #
     pset_states.execute(kernels,
@@ -253,6 +255,7 @@ if __name__ == "__main__":
     number_of_days_release = int(sys.argv[4]) # Example: 2  
     length_sim = int(sys.argv[2]) + number_of_days_release # Example: 10 
     delta_t = int(sys.argv[5]) # Example: 40 [in seconds]
+    interval = int(sys.argv[6]) # Example: 600 [in seconds]
     # Convert start_time_str to datetime
     start_time = datetime.strptime(start_time_str, "%Y-%m-%dT%H:%M:%S")
     #
@@ -261,7 +264,7 @@ if __name__ == "__main__":
     #
     print(f"PBDEs_OP_run simulation for {length_sim} days, releasing {number_of_particles_per_release} particles every 1 hour for {number_of_days_release} days from the starting date {start_time}")
     #
-    PBDEs_OP_run(start_time, length_sim, number_of_particles_per_release, number_of_days_release, delta_t)
+    PBDEs_OP_run(start_time, length_sim, number_of_particles_per_release, number_of_days_release, delta_t, interval)
     #
     ## How to run in the terminal:
     # python -m MODEL_hourly_V1 start_time_str length_sim number_particles days_release delta_t

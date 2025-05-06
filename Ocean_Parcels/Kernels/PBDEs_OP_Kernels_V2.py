@@ -19,10 +19,11 @@ def PBDEs_states(particle, fieldset, time):
         # Optionally, you can force the status to equal release_status.
         # This way, if you're outputting at the release hour, you'll see the original value.
 #        particle.status = particle.release_status
-    if particle.time < 10000:
-        particle.status = 0
+    #if particle.time < 10000:
+        #particle.status = 0
     #
-    else:     
+    #else:
+    if particle.initialized != 0:     
     #    
         random_value = ParcelsRandom.random()
         # Absorption and desoprtion (per hour)
@@ -35,6 +36,7 @@ def PBDEs_states(particle, fieldset, time):
         elif particle.status == 3 and random_value < particle.deso_m_probability:
             particle.status = 2  # Returns to Colloidal/Dissolved
             #
+    particle.initialized = 1        
 #### PBDEs states sinking velocities features ####
 def PBDEs_forms(particle, fieldset, time):
     #print('PBDEs_forms kernel is running')
@@ -130,38 +132,45 @@ def Displacement(particle,fieldset,time):
             particle_ddepth += dzs #apply mixing
 #
 #### RESUSPENSION ####
-
+# Try 2 min, 5 min, 10min for sensitivity :)
 def resuspension(particle, fieldset, time):
-    # Only proceed if particle is at the seabed (status 4)
-    if particle.status == 4:
+    #particle.time_resuspension += math.fabs(particle.dt)
+    #
+    #if particle.time_resuspension >= particle.resuspension_interval:
         #
-        bat_particle = particle.depth - 0.5 * particle.e3t_val  
+    #    particle.time_resuspension = 0 
         #
-        # horizontal velocities in m/s  
-        u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * particle.deg2met * particle.latT
-        v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * particle.deg2met
-        # squared horizontal velocity
-        H_vel_2 = u_vel**2 + v_vel**2  
-        particle.h_vel = H_vel_2  
+        # Only proceed if particle is at the seabed (status 4)
+        if particle.status == 4:
+            #
+            bat_particle = particle.depth - 0.5 * particle.e3t_val  
+            #
+            # horizontal velocities in m/s  
+            u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * particle.deg2met * particle.latT
+            v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * particle.deg2met
+            # squared horizontal velocity
+            H_vel_2 = u_vel**2 + v_vel**2  
+            particle.h_vel = H_vel_2  
 
-        # Apply resuspension only if velocity exceeds threshold
-        #if H_vel_2 > 0.00029:
-            #log_e3t = math.log(particle.e3t_val * 0.5)  
-        #TAU = H_vel_2 * particle.k_constant * ((particle.log_e3t - particle.log_z_star) ** (-2)) * 1024  
-        #particle.tau_values = TAU
-        # 
-        # Intentar definir una aproximacion lineal para no tener que calcular el logaritmo!!! Te ahorrarias mucho tiempo de simulacion!!!
-        factor = 1 + (fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] / particle.depth) #SSH(t) sea surface height
-        particle.log_e3t = math.log(particle.e3t_val * factor * 0.5)  
- 
-        #
-        if particle.tau_constant * (particle.log_e3t - particle.log_z_star) ** 2 >= H_vel_2: # new updated condition for resuspension
-        #if TAU >= 0.05:
-            # Resuspension probability (30% for marine particles, 70% for colloidal)
-            if ParcelsRandom.uniform(0, 1) >= 0.3:
-                particle.status = 2  # Colloidal/Dissolved PBDEs
-            else:
-                particle.status = 3  # Marine Particles         
+            # Apply resuspension only if velocity exceeds threshold
+            #if H_vel_2 > 0.00029:
+                #log_e3t = math.log(particle.e3t_val * 0.5)  
+            #TAU = H_vel_2 * particle.k_constant * ((particle.log_e3t - particle.log_z_star) ** (-2)) * 1024  
+            #particle.tau_values = TAU
+            # 
+            # Intentar definir una aproximacion lineal para no tener que calcular el logaritmo!!! Te ahorrarias mucho tiempo de simulacion!!!
+            factor = 1 + (fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] / particle.depth) #SSH(t) sea surface height
+            particle.log_e3t = math.log(particle.e3t_val * factor * 0.5)  
+            # Taylor Expansion would need a for loop inside the Kernel :( ---> Heavier than the log function inside the Kernel!
+            #
+            # How to add the 10 minutes (for example) change in the probability of resuspending?
+            if particle.tau_constant * (particle.log_e3t - particle.log_z_star) ** 2 >= H_vel_2: # new updated condition for resuspension
+            #if TAU >= 0.05:
+                # Resuspension probability (30% for marine particles, 70% for colloidal)
+                if ParcelsRandom.uniform(0, 1) >= 0.3:
+                    particle.status = 2  # Colloidal/Dissolved PBDEs
+                else:
+                    particle.status = 3  # Marine Particles         
 #
 #### OTHERS ####
 def export(particle,fieldset,time):
