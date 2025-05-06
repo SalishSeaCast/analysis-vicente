@@ -68,11 +68,12 @@ def filename_set(start,length,varlist=['U','V','W'],local=0):
     duration = timedelta(days=length)
     #Build filenames
     paths = path(local)
-    Rlist,Tlist,Ulist, Vlist, Wlist = [], [], [], [], []
-    Waveslist = []
+#    Rlist, Tlist = [], [] 
+    Ulist, Vlist, Wlist = [], [], []
+#    Waveslist = []
     Flist = []
-    Biolist,MZlist = [],[]
-    Biology_list = []
+#    Biolist,MZlist = [],[]
+#    Biology_list = []
    #
     for day in range(duration.days):
         path_NEMO = make_prefix(start + timedelta(days=day), paths['NEMO'])
@@ -80,11 +81,11 @@ def filename_set(start,length,varlist=['U','V','W'],local=0):
         Ulist.append(path_NEMO + '_grid_U.nc')
         Vlist.append(path_NEMO + '_grid_V.nc')
         Wlist.append(path_NEMO + '_grid_W.nc')
-        Tlist.append(path_NEMO + '_grid_T.nc')
-        Biolist.append(path_NEMO_d + '_prod_T.nc')
-        Biology_list.append(path_NEMO + '_biol_T.nc')
-        Waveslist.append(get_WW3_path(start + timedelta(days=day)))
-        Flist.append(get_Fraser_path(start + timedelta(days=day)))
+#        Tlist.append(path_NEMO + '_grid_T.nc')
+#        Biolist.append(path_NEMO_d + '_prod_T.nc')
+#        Biology_list.append(path_NEMO + '_biol_T.nc')
+#        Waveslist.append(get_WW3_path(start + timedelta(days=day)))
+#        Flist.append(get_Fraser_path(start + timedelta(days=day)))
         
 
     # Load NEMO forcing 
@@ -93,37 +94,40 @@ def filename_set(start,length,varlist=['U','V','W'],local=0):
         'V': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Wlist[0], 'data': Vlist},
         'W': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Wlist[0], 'data': Wlist},
         'Kz': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Wlist[0], 'data': Wlist},
-        'T': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
-        'S': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
-        'ssh': {'lon': paths['coords'], 'lat': paths['coords'], 'data': Tlist},
-        'R': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
-        'Bathy' : {'lon': paths['coords'], 'lat': paths['coords'], 'data': paths['bat']},
-        'gdepth' : {'lon': paths['coords'], 'lat': paths['coords'],'depth': Wlist[0], 'data': paths['mask']},
+#        'T': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
+#        'S': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
+#        'ssh': {'lon': paths['coords'], 'lat': paths['coords'], 'data': Tlist},
+#        'R': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
+#        'Bathy' : {'lon': paths['coords'], 'lat': paths['coords'], 'data': paths['bat']},
+#        'gdepth' : {'lon': paths['coords'], 'lat': paths['coords'],'depth': Wlist[0], 'data': paths['mask']},
         'totdepth' : {'lon': paths['coords'], 'lat': paths['coords'], 'data': paths['mask']},
-        'US' : {'lon': paths['coordsWW3'], 'lat': paths['coordsWW3'], 'data': Waveslist},
-        'VS' : {'lon': paths['coordsWW3'], 'lat': paths['coordsWW3'], 'data': Waveslist},
-        'WL' : {'lon': paths['coordsWW3'], 'lat': paths['coordsWW3'], 'data': Waveslist},
-        'FS' :  {'lon': paths['coords'], 'lat': paths['coords'],'data': Flist},
-        'Diat' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biolist},
-        'Flag' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biolist},
-        'Vol' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Wlist[0],'data': paths['mask']},
-        'PON' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
-        'DIATO' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
-        'FLAGE' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
-        'DON' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
-        'cell_size' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
-        'last_cell_index' : {'lon': paths['coords'], 'lat': paths['coords'], 'data': paths['fondo']}
+#        'US' : {'lon': paths['coordsWW3'], 'lat': paths['coordsWW3'], 'data': Waveslist},
+#        'VS' : {'lon': paths['coordsWW3'], 'lat': paths['coordsWW3'], 'data': Waveslist},
+#        'WL' : {'lon': paths['coordsWW3'], 'lat': paths['coordsWW3'], 'data': Waveslist},
+#        'FS' :  {'lon': paths['coords'], 'lat': paths['coords'],'data': Flist},
+#        'Diat' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biolist},
+#        'Flag' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biolist},
+#        'Vol' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Wlist[0],'data': paths['mask']},
+#        'PON' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
+#        'DIATO' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
+#        'FLAGE' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
+#        'DON' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
+#        'cell_size' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
+#        'last_cell_index' : {'lon': paths['coords'], 'lat': paths['coords'], 'data': paths['fondo']}
     }
-    variables = {'U': 'vozocrtx', 'V': 'vomecrty','W': 'vovecrtz','T':'votemper','S':'vosaline','R':'sigma_theta',
-        'US':'uuss','VS':'vuss','WL':'lm','Bathy':'Bathymetry','FS':'rorunoff','Kz':'vert_eddy_diff',
-        'MZ':'microzooplankton','Diat':'PPDIATNO3','Flag':'PPPHYNO3','ssh':'sossheig','totdepth':'totaldepth','Vol':'volume', 'PON' : 'particulate_organic_nitrogen',
-        'DIATO' : 'diatoms', 'FLAGE' : 'flagellates', 'DON' : 'dissolved_organic_nitrogen', 'cell_size' : 'e3t', 'last_cell_index' : 'mbathy'}
-        
-    file2,var2 = {},{}
+    variables = {'U': 'vozocrtx', 'V': 'vomecrty','W': 'vovecrtz', # 'T':'votemper','S':'vosaline','R':'sigma_theta',
+   #     'US':'uuss','VS':'vuss','WL':'lm','Bathy':'Bathymetry','FS':'rorunoff',
+                 'Kz':'vert_eddy_diff',
+   #     'MZ':'microzooplankton','Diat':'PPDIATNO3','Flag':'PPPHYNO3','ssh':'sossheig',
+                 'totdepth':'totaldepth',
+                 # 'Vol':'volume', 'PON' : 'particulate_organic_nitrogen',
+   #     'DIATO' : 'diatoms', 'FLAGE' : 'flagellates', 'DON' : 'dissolved_organic_nitrogen', 'cell_size' : 'e3t', 'last_cell_index' : 'mbathy'}
+                }    
+    file2, var2 = {},{}
     for var in varlist:
-        file2[var]=filenames[var]
-        var2[var]=variables[var]
-    return file2,var2
+        file2[var] = filenames[var]
+        var2[var] = variables[var]
+    return file2, var2
 
 def p_deploy(N,n,dmin,dd,r = 1000):
     #r is radius of particle cloud [m]
