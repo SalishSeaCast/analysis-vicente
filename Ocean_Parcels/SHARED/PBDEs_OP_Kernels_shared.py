@@ -8,19 +8,42 @@ def PBDEs_states(particle, fieldset, time):
     if (time > particle.release_time):
         if particle.status < 0:
             particle.status = - particle.status
-        elif (particle.status < 4):
+        else:
             random_value = ParcelsRandom.random()
-        # Absorption and desoprtion (per hour)
         # Status updates
             if particle.status == 1 and random_value < fieldset.deso_s_probability:
-                particle.status = 2  # Becomes Colloidal/Dissolved
+                particle.status = 2  # Becomes Colloidal/Dissolved           
+            elif particle.status == 11:
+                if random_value < fieldset.sediment_burying_probability:
+                    particle.status = 21
+                elif random_value < fieldset.deso_s_probability:
+                    particle.status = 12  # Becomes Colloidal/Dissolved in Sediments
+            elif particle.status == 21 and random_value < fieldset.deso_s_probability:
+                particle.status = 22  # Becomes Colloidal/Dissolved buried in sediments
+                
             elif particle.status == 2 and random_value < fieldset.abso_probability:
                 particle.status = 3  # Becomes attached to Marine Particle
+            elif particle.status == 12:
+                if random_value < fieldset.sediment_burying_probability:
+                    particle.status = 22
+                elif random_value < fieldset.abso_sed_probability:
+                    particle.status = 13  # Becomes attached to Marine Particle in Sediments
+            elif particle.status == 22 and random_value < fieldset.abso_sed_probability:
+                particle.status = 23  # Becomes attached to Marine Particle buried in Sediments
+                
             elif particle.status == 3 and random_value < fieldset.deso_m_probability:
                 particle.status = 2  # Returns to Colloidal/Dissolved
+            elif particle.status == 13:
+                if random_value < fieldset.sediment_burying_probability:
+                    particle.status = 23
+                elif random_value < fieldset.deso_sed_probability:
+                    particle.status = 12  # Returns to Colloidal/Dissolved in Sediments
+            elif particle.status == 23 and random_value < fieldset.deso_sed_probability:
+                particle.status = 22 # Returns to Colloidal/Dissolved buried Sediments
             
 #### PBDEs states sinking velocities features ####
 def Sinking(particle, fieldset, time):
+    particle_ddepth = 0
     if particle.status == 1:
         particle_ddepth += fieldset.sinkvel_sewage * particle.dt
     #Sewage Particles sink fast        
@@ -60,10 +83,9 @@ def Advection(particle, fieldset, time):
         (u4, v4, w4) = fieldset.UVW[time + particle.dt, dep3, lat3, lon3]
         #
         wa = (w1 + 2*w2 + 2*w3 + w4) /6.
-        particle.wa = wa* particle.dt
         particle_dlon = (u1 + 2*u2 + 2*u3 + u4) / 6. * particle.dt
         particle_dlat = (v1 + 2*v2 + 2*v3 + v4) / 6. * particle.dt
-        particle_ddepth = particle.wa/particle.fact + VVL
+        particle_ddepth = particle_ddepth + wa/particle.fact + VVL
         #
         if particle_ddepth + particle.depth < 0:
             particle_ddepth = - (2 * particle.depth + particle_ddepth)
@@ -73,7 +95,7 @@ def turb_mix(particle,fieldset,time):
     if particle.status == 1 or particle.status == 2 or particle.status == 3:
         """Vertical mixing"""
         #Vertical mixing
-        td = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon] #Total_depth (can't share, unless I set it for the particle)
+#        td = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon] # does share according to the docs, but only for the current time step
         if particle.depth + 0.5 / particle.fact > td: #Only calculate gradient of diffusion for particles deeper than 0.5 otherwise OP will check for particles outside the domain and remove it.
             Kzdz = 2 * (fieldset.vert_eddy_diff[time, particle.depth, particle.lat, particle.lon] 
                         - fieldset.vert_eddy_diff[time, particle.depth-0.5/particle.fact, particle.lat, particle.lon]) #backwards difference 
@@ -93,48 +115,49 @@ def turb_mix(particle,fieldset,time):
         #Apply turbulent mixing.
         if dzs + particle_ddepth + particle.depth > td:
             particle.depth  = td # Get particles attached to the bottom when they reach it
-            particle.status = 4
- #ADD LATER!!!           particle.e3t_val = fieldset.e3t[0, particle.depth, particle.lat+particle_dlat, particle.lon+particle_dlon]  # Update e3t
+            particle_ddepth = 0 # As I've put them on the bottom and that's where I want them.
+            particle.status += 10 
             #
         elif dzs + particle.depth + particle_ddepth < 0:
-            particle_ddepth = -(dzs + particle.depth+particle_ddepth) #reflection on surface
+            particle_ddepth = -(dzs + particle.depth + particle_ddepth) #reflection on surface
         #
         else:
             particle_ddepth += dzs #apply mixing
+        
 #
 #### RESUSPENSION ####
 
 def resuspension(particle, fieldset, time):
-    # Only proceed if particle is at the seabed (status 4)
-    if particle.status == 4:
+    # Only proceed if particle is at the seabed (status 11, 12 or 13, 21, 22, 23)
+    if particle.status > 10:
+        if particle.status > 20:
+            vtau_constant = fieldset.tau_bury_constant
+            vtau_constant_lower = fieldset.tau_bury_constant_lower
+            vtau_constant_upper = fieldset.tau_bury_constant_upper
+        else:
+            vtau_constant = fieldset.tau_constant
+            vtau_constant_lower = fieldset.tau_constant_lower
+            vtau_constant_upper = fieldset.tau_constant_upper
         #
-        bat_particle = particle.depth - 0.5 * particle.e3t_val  
+        e3t_val_o2 = fieldset.e3t[time, particle.depth, particle.lat, particle.lon]
+        bat_particle = particle.depth - e3t_val_o2  
         #
         # horizontal velocities in m/s  
-        u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * particle.deg2met * particle.latT
-        v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * particle.deg2met
+        u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * fieldset.u_deg2mps
+        v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * fieldset.v_deg2mps
         # squared horizontal velocity
         H_vel_2 = u_vel**2 + v_vel**2  
-        particle.h_vel = H_vel_2  
-
-        # Apply resuspension only if velocity exceeds threshold
-        #if H_vel_2 > 0.00029:
-            #log_e3t = math.log(particle.e3t_val * 0.5)  
-        #TAU = H_vel_2 * particle.k_constant * ((particle.log_e3t - particle.log_z_star) ** (-2)) * 1024  
-        #particle.tau_values = TAU
-        # 
-        # Aproximation to avoid heavy Kernel?
-        factor = 1 + (fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] / particle.depth) #SSH(t) sea surface height
-        particle.log_e3t = math.log(particle.e3t_val * factor * 0.5)  
- 
-        #
-        if particle.tau_constant * (particle.log_e3t - particle.log_z_star) ** 2 >= H_vel_2: # new updated condition for resuspension
-        #if TAU >= 0.05:
-            # Resuspension probability (30% for marine particles, 70% for colloidal)
-            if ParcelsRandom.uniform(0, 1) >= 0.3:
-                particle.status = 2  # Colloidal/Dissolved PBDEs
-            else:
-                particle.status = 3  # Marine Particles         
+        if e3t_val_o2 < fieldset.lowere3t_o2:
+            if vtau_constant_lower <= H_vel_2:
+                particle.status -= 10
+        elif e3t_val_o2 > fieldset.uppere3t_o2:
+            if vtau_constant_upper <= H_vel_2:
+                particle.status -= 10
+        else:
+            log_e3t = math.log(e3t_val_o2 * particle.fact)  
+            if vtau_constant * (log_e3t - fieldset.log_z_star) ** 2 <= H_vel_2:
+                particle.status -= 10
+                
 #
 #### OTHERS ####
 def export(particle,fieldset,time):
