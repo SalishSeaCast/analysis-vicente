@@ -68,7 +68,9 @@ def filename_set(start,length,varlist=['U','V','W'],local=0):
     duration = timedelta(days=length)
     #Build filenames
     paths = path(local)
-#    Rlist, Tlist = [], [] 
+#    Rlist, 
+    Tlist = []
+#    , [] 
     Ulist, Vlist, Wlist = [], [], []
 #    Waveslist = []
     Flist = []
@@ -81,14 +83,14 @@ def filename_set(start,length,varlist=['U','V','W'],local=0):
         Ulist.append(path_NEMO + '_grid_U.nc')
         Vlist.append(path_NEMO + '_grid_V.nc')
         Wlist.append(path_NEMO + '_grid_W.nc')
-#        Tlist.append(path_NEMO + '_grid_T.nc')
+        Tlist.append(path_NEMO + '_grid_T.nc')
 #        Biolist.append(path_NEMO_d + '_prod_T.nc')
 #        Biology_list.append(path_NEMO + '_biol_T.nc')
 #        Waveslist.append(get_WW3_path(start + timedelta(days=day)))
 #        Flist.append(get_Fraser_path(start + timedelta(days=day)))
         
 
-    # Load NEMO forcing 
+    # Load NEMO forcing  
     filenames = {
         'U': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Wlist[0], 'data': Ulist},
         'V': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Wlist[0], 'data': Vlist},
@@ -96,7 +98,8 @@ def filename_set(start,length,varlist=['U','V','W'],local=0):
         'Kz': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Wlist[0], 'data': Wlist},
 #        'T': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
 #        'S': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
-#        'ssh': {'lon': paths['coords'], 'lat': paths['coords'], 'data': Tlist},
+        'ssh': {'lon': paths['coords'], 'lat': paths['coords'], 'data': Tlist},
+        'e3t': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
 #        'R': {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
 #        'Bathy' : {'lon': paths['coords'], 'lat': paths['coords'], 'data': paths['bat']},
 #        'gdepth' : {'lon': paths['coords'], 'lat': paths['coords'],'depth': Wlist[0], 'data': paths['mask']},
@@ -118,10 +121,12 @@ def filename_set(start,length,varlist=['U','V','W'],local=0):
     variables = {'U': 'vozocrtx', 'V': 'vomecrty','W': 'vovecrtz', # 'T':'votemper','S':'vosaline','R':'sigma_theta',
    #     'US':'uuss','VS':'vuss','WL':'lm','Bathy':'Bathymetry','FS':'rorunoff',
                  'Kz':'vert_eddy_diff',
-   #     'MZ':'microzooplankton','Diat':'PPDIATNO3','Flag':'PPPHYNO3','ssh':'sossheig',
+   #     'MZ':'microzooplankton','Diat':'PPDIATNO3','Flag':'PPPHYNO3',
+                 'ssh':'sossheig',
                  'totdepth':'totaldepth',
                  # 'Vol':'volume', 'PON' : 'particulate_organic_nitrogen',
-   #     'DIATO' : 'diatoms', 'FLAGE' : 'flagellates', 'DON' : 'dissolved_organic_nitrogen', 'cell_size' : 'e3t', 'last_cell_index' : 'mbathy'}
+   #     'DIATO' : 'diatoms', 'FLAGE' : 'flagellates', 'DON' : 'dissolved_organic_nitrogen',
+                 'e3t' : 'e3t', #'last_cell_index' : 'mbathy'
                 }    
     file2, var2 = {},{}
     for var in varlist:
