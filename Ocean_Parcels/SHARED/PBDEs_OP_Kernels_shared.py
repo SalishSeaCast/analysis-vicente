@@ -113,9 +113,15 @@ def turb_mix(particle,fieldset,time):
         dzs = (dgrad + d_random)
         
         #Apply turbulent mixing.
-        if dzs + particle_ddepth + particle.depth > td:
-            particle.depth  = td # Get particles attached to the bottom when they reach it
+        tdn = fieldset.totaldepth[time, particle.depth, 
+                        particle.lat+particle_dlat, particle.lon+particle_dlon]
+        if dzs + particle_ddepth + particle.depth > tdn:
+            particle.depth  = tdn # Get particles attached to the bottom when they reach it
             particle_ddepth = 0 # As I've put them on the bottom and that's where I want them.
+            particle.lat = particle.lat + particle_dlat
+            particle_dlat = 0
+            particle.lon = particle.lon + particle_dlon
+            particle_dlon = 0
             particle.status += 10 
             #
         elif dzs + particle.depth + particle_ddepth < 0:
@@ -139,24 +145,29 @@ def resuspension(particle, fieldset, time):
             vtau_constant_lower = fieldset.tau_constant_lower
             vtau_constant_upper = fieldset.tau_constant_upper
         #
-        e3t_val_o2 = fieldset.e3t[time, particle.depth, particle.lat, particle.lon]
-        bat_particle = particle.depth - e3t_val_o2  
+        tdn = fieldset.totaldepth[time, particle.depth, 
+                        particle.lat, particle.lon]                 # even if new, already moved
+        e3t_val_o2 = fieldset.e3t[time, tdn, particle.lat, particle.lon]
+        bat_particle = tdn - e3t_val_o2  
         #
         # horizontal velocities in m/s  
-        u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * fieldset.u_deg2mps
-        v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * fieldset.v_deg2mps
+        u_vel = fieldset.U[time, bat_particle, particle.lat+particle_dlat, particle.lon+particle_dlon] * fieldset.u_deg2mps
+        v_vel = fieldset.V[time, bat_particle, particle.lat+particle_dlat, particle.lon+particle_dlon] * fieldset.v_deg2mps
         # squared horizontal velocity
         H_vel_2 = u_vel**2 + v_vel**2  
         if e3t_val_o2 < fieldset.lowere3t_o2:
             if vtau_constant_lower <= H_vel_2:
                 particle.status -= 10
+                particle.depth = tdn - min(e3t_val_o2, 0.5/particle.fact)
         elif e3t_val_o2 > fieldset.uppere3t_o2:
             if vtau_constant_upper <= H_vel_2:
                 particle.status -= 10
+                particle.depth = tdn - min(e3t_val_o2, 0.5/particle.fact)
         else:
             log_e3t = math.log(e3t_val_o2 * particle.fact)  
             if vtau_constant * (log_e3t - fieldset.log_z_star) ** 2 <= H_vel_2:
                 particle.status -= 10
+                particle.depth = tdn - min(e3t_val_o2, 0.5/particle.fact)
                 
 #
 #### OTHERS ####
