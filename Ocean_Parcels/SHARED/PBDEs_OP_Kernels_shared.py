@@ -49,6 +49,15 @@ def Sinking(particle, fieldset, time):
     #Sewage Particles sink fast        
     elif particle.status == 3:
         particle_ddepth += fieldset.sinkvel_marine * particle.dt 
+
+    # do settling here
+    if particle.status == 1 or particle.status == 3:
+        td = fieldset.totaldepth[time, particle.depth, 
+                        particle.lat, particle.lon]
+        if particle_ddepth + particle.depth > tdn:
+            particle.depth  = tdn # Get particles attached to the bottom when they reach it
+            particle_ddepth = 0 # As I've put them on the bottom and that's where I want them.
+            particle.status += 10 
     
 #
 #### ADVECTION ####
@@ -89,6 +98,11 @@ def Advection(particle, fieldset, time):
         #
         if particle_ddepth + particle.depth < 0:
             particle_ddepth = - (2 * particle.depth + particle_ddepth)
+        tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
+                        particle.lat+particle_dlat, particle.lon+particle_dlon]
+        # advect into bottom: bounce
+        if particle_ddepth + particle.depth > tdn:
+            particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth)
 #
 #### TURBULENT MIX ####
 def turb_mix(particle,fieldset,time):
@@ -115,17 +129,12 @@ def turb_mix(particle,fieldset,time):
         #Apply turbulent mixing.
         tdn = fieldset.totaldepth[time, particle.depth, 
                         particle.lat+particle_dlat, particle.lon+particle_dlon]
+        # reflect if mixed into bottom
         if dzs + particle_ddepth + particle.depth > tdn:
-            particle.depth  = tdn # Get particles attached to the bottom when they reach it
-            particle_ddepth = 0 # As I've put them on the bottom and that's where I want them.
-            particle.lat = particle.lat + particle_dlat
-            particle_dlat = 0
-            particle.lon = particle.lon + particle_dlon
-            particle_dlon = 0
-            particle.status += 10 
+            particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth + dzs)
             #
         elif dzs + particle.depth + particle_ddepth < 0:
-            particle_ddepth = -(dzs + particle.depth + particle_ddepth) #reflection on surface
+            particle_ddepth = -(dzs + 2*particle.depth + particle_ddepth) #reflection on surface
         #
         else:
             particle_ddepth += dzs #apply mixing
@@ -151,8 +160,8 @@ def resuspension(particle, fieldset, time):
         bat_particle = tdn - e3t_val_o2  
         #
         # horizontal velocities in m/s  
-        u_vel = fieldset.U[time, bat_particle, particle.lat+particle_dlat, particle.lon+particle_dlon] * fieldset.u_deg2mps
-        v_vel = fieldset.V[time, bat_particle, particle.lat+particle_dlat, particle.lon+particle_dlon] * fieldset.v_deg2mps
+        u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * fieldset.u_deg2mps
+        v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * fieldset.v_deg2mps
         # squared horizontal velocity
         H_vel_2 = u_vel**2 + v_vel**2  
         if e3t_val_o2 < fieldset.lowere3t_o2:
