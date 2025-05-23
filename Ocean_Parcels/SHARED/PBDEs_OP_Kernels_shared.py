@@ -95,21 +95,20 @@ def Advection(particle, fieldset, time):
         particle_dlon = (u1 + 2*u2 + 2*u3 + u4) / 6. * particle.dt
         particle_dlat = (v1 + 2*v2 + 2*v3 + v4) / 6. * particle.dt
         particle_ddepth = particle_ddepth + wa/particle.fact + VVL
-        #
-        if particle_ddepth + particle.depth < 0:
-            particle_ddepth = - (2 * particle.depth + particle_ddepth)
-        tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
-                        particle.lat+particle_dlat, particle.lon+particle_dlon]
-        # advect into bottom: bounce
-        if particle_ddepth + particle.depth > tdn:
-            particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth)
+        # worry about this only after mixing added
+#        if particle_ddepth + particle.depth < 0:
+#            particle_ddepth = - (2 * particle.depth + particle_ddepth)
+#        tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
+#                        particle.lat+particle_dlat, particle.lon+particle_dlon]
+#        # advect into bottom: onto bottom
+#        if particle_ddepth + particle.depth > tdn:
+#            particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth)
 #
 #### TURBULENT MIX ####
 def turb_mix(particle,fieldset,time):
     if particle.status == 1 or particle.status == 2 or particle.status == 3:
         """Vertical mixing"""
         #Vertical mixing
-#        td = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon] # does share according to the docs, but only for the current time step
         if particle.depth + 0.5 / particle.fact > td: #Only calculate gradient of diffusion for particles deeper than 0.5 otherwise OP will check for particles outside the domain and remove it.
             Kzdz = 2 * (fieldset.vert_eddy_diff[time, particle.depth, particle.lat, particle.lon] 
                         - fieldset.vert_eddy_diff[time, particle.depth-0.5/particle.fact, particle.lat, particle.lon]) #backwards difference 
@@ -126,10 +125,10 @@ def turb_mix(particle,fieldset,time):
         d_random = sqrt(3 * 2 * Kz * particle.dt) * Rr / particle.fact
         dzs = (dgrad + d_random)
         
-        #Apply turbulent mixing.
-        tdn = fieldset.totaldepth[time, particle.depth, 
-                        particle.lat+particle_dlat, particle.lon+particle_dlon]
+        #Apply turbulent mixing.       
         # reflect if mixed into bottom
+         tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
+                        particle.lat+particle_dlat, particle.lon+particle_dlon]
         if dzs + particle_ddepth + particle.depth > tdn:
             particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth + dzs)
             #
