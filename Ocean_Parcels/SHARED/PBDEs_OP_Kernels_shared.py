@@ -55,7 +55,7 @@ def Sinking(particle, fieldset, time):
         td = fieldset.totaldepth[time, particle.depth, 
                         particle.lat, particle.lon]
         if particle_ddepth + particle.depth > td:
-            particle.depth  = tdn # Get particles attached to the bottom when they reach it
+            particle.depth  = td # Get particles attached to the bottom when they reach it
             particle_ddepth = 0 # As I've put them on the bottom and that's where I want them.
             particle.status += 10 
     
@@ -127,7 +127,7 @@ def turb_mix(particle,fieldset,time):
         
         #Apply turbulent mixing.       
         # reflect if mixed into bottom
-         tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
+        tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
                         particle.lat+particle_dlat, particle.lon+particle_dlon]
         if dzs + particle_ddepth + particle.depth > tdn:
             particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth + dzs)
