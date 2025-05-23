@@ -54,7 +54,7 @@ def Sinking(particle, fieldset, time):
     if particle.status == 1 or particle.status == 3:
         td = fieldset.totaldepth[time, particle.depth, 
                         particle.lat, particle.lon]
-        if particle_ddepth + particle.depth > tdn:
+        if particle_ddepth + particle.depth > td:
             particle.depth  = tdn # Get particles attached to the bottom when they reach it
             particle_ddepth = 0 # As I've put them on the bottom and that's where I want them.
             particle.status += 10 
