@@ -134,7 +134,7 @@ def turb_mix(particle,fieldset,time):
             particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth + dzs)
             #
         elif dzs + particle.depth + particle_ddepth < 0:
-            particle_ddepth = -(dzs + 2*particle.depth + particle_ddepth) #reflection on surface
+            particle_ddepth = -(dzs + particle.depth + particle_ddepth) #reflection on surface
         #
         else:
             particle_ddepth += dzs #apply mixing
