@@ -26,16 +26,16 @@ def timings(year, month, day, sim_length, number_outputs):
     print (number_particles)
 
     output_interval = datetime.timedelta(seconds=sim_length * 86400 / number_outputs)
-#    output_interval = datetime.timedelta(seconds=delta_t)
+#    output_interval = datetime.timedelta(seconds=120)
     print ('output_interval', output_interval)
     
     return (start_time, data_length, duration, delta_t, release_particles_every, number_particles, output_interval)
 
 
-def name_outfile(year, month, sim_length):
+def name_outfile(year, month, day, sim_length):
     path = '/home/sallen/MEOPAR/ANALYSIS/analysis-vicente/Ocean_Parcels/SHARED/'
     print (year, month, sim_length)
-    fn = f'Reflect_corrected_for_01{month}{year}_run_{sim_length}_days.zarr'
+    fn = f'Full_Marine_Sink_for_{day}-{month}-{year}_run_{sim_length}_days.zarr'
     return os.path.join(path, fn)
 
 
@@ -78,8 +78,8 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     field_set.add_field(e3t)
     
     dt_h = 1 / 3600. 
-    field_set.add_constant('sinkvel_sewage', 200/86400.) # m/hr * dt --> to seconds --> ~ 200 m/d
-    field_set.add_constant('sinkvel_marine', 40/86400.) # m/hr * dt --> to seconds --> ~ 200 m/d
+    field_set.add_constant('sinkvel_sewage', 500/86400.) # m/hr * dt --> to seconds --> ~ 200 m/d (was 500)
+    field_set.add_constant('sinkvel_marine', 250/86400.) # m/hr * dt --> to seconds --> ~ 200 m/d (was 250)
     
     abso = 0.038 / 86400 # Colloidal/Dissolved → Attached to Marine Particle /s  (1/36 days)
     deso_s = 1.6 / 86400 # Sewage Particle → Colloidal/Dissolved /s
@@ -132,7 +132,7 @@ def PBDEs_OP_run(year, month, day, sim_length, number_outputs):
 
     field_set, constants = set_fieldsets_and_constants(start_time, data_length, delta_t)
 
-    outfile_states = name_outfile(year, month, sim_length)
+    outfile_states = name_outfile(year, month, day, sim_length)
 
     # Set-up Ocean Parcels
     class MPParticle(JITParticle):
@@ -152,6 +152,7 @@ def PBDEs_OP_run(year, month, day, sim_length, number_outputs):
       + pset_states.Kernel(PBDE.Advection)
       + pset_states.Kernel(PBDE.turb_mix) + pset_states.Kernel(PBDE.resuspension)
       + pset_states.Kernel(PBDE.CheckOutOfBounds) + pset_states.Kernel(PBDE.export)
+      + pset_states.Kernel(PBDE.KeepInOcean)
      )
 
     # Run!
