@@ -69,25 +69,24 @@ def Advection(particle, fieldset, time):
         sshn = fieldset.sossheig[time+particle.dt, particle.depth, particle.lat, particle.lon] #SSH(t+dt) sea surface height in the next time step
         td = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon]#Total_depth 
         particle.fact = (1 + ssh / td)
-        VVL = (sshn - ssh) * particle.depth / td
-        #VVL = (sshn-ssh)*particle.depth/(td+ssh)
-        #
+        VVL = (sshn - ssh) * particle.depth / td # following Jose: 
+        # https://github.com/SalishSeaCast/analysis-jose/blob/main/Graham/Source/OP_Kernels.py
         # calculate once and reuse
         dt_factor = 0.5 * particle.dt / particle.fact
         (u1, v1, w1) = fieldset.UVW[time, particle.depth, particle.lat, particle.lon]
-        lon1 = particle.lon + u1*.5*particle.dt
-        lat1 = particle.lat + v1*.5*particle.dt
+        lon1 = particle.lon + u1 * 0.5*particle.dt
+        lat1 = particle.lat + v1 * 0.5*particle.dt
         dep1 = particle.depth + w1 * dt_factor
         #
-        (u2, v2, w2) = fieldset.UVW[time + .5 * particle.dt, dep1, lat1, lon1]
-        lon2 = particle.lon + u2*.5*particle.dt
-        lat2 = particle.lat + v2*.5*particle.dt
+        (u2, v2, w2) = fieldset.UVW[time + 0.5 * particle.dt, dep1, lat1, lon1]
+        lon2 = particle.lon + u2 * 0.5*particle.dt
+        lat2 = particle.lat + v2 * 0.5*particle.dt
         dep2 = particle.depth + w2 * dt_factor
         #
-        (u3, v3, w3) = fieldset.UVW[time + .5 * particle.dt, dep2, lat2, lon2]
-        lon3 = particle.lon + u3*particle.dt
-        lat3 = particle.lat + v3*particle.dt
-        dep3 = particle.depth + w3 * dt_factor
+        (u3, v3, w3) = fieldset.UVW[time + 0.5 * particle.dt, dep2, lat2, lon2]
+        lon3 = particle.lon + u3 * particle.dt
+        lat3 = particle.lat + v3 * particle.dt
+        dep3 = particle.depth + w3 * 2 * dt_factor
         #
         (u4, v4, w4) = fieldset.UVW[time + particle.dt, dep3, lat3, lon3]
         #
@@ -95,9 +94,10 @@ def Advection(particle, fieldset, time):
         particle_dlon = (u1 + 2*u2 + 2*u3 + u4) / 6. * particle.dt
         particle_dlat = (v1 + 2*v2 + 2*v3 + v4) / 6. * particle.dt
         particle_ddepth = particle_ddepth + wa/particle.fact + VVL
+        
+        if particle_ddepth + particle.depth < 0:
+            particle_ddepth = - (2 * particle.depth + particle_ddepth)
         # worry about this only after mixing added
-#        if particle_ddepth + particle.depth < 0:
-#            particle_ddepth = - (2 * particle.depth + particle_ddepth)
 #        tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
 #                        particle.lat+particle_dlat, particle.lon+particle_dlon]
 #        # advect into bottom: onto bottom
@@ -127,13 +127,13 @@ def turb_mix(particle,fieldset,time):
         
         #Apply turbulent mixing.       
         # reflect if mixed into bottom
-        tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
+        tdn = fieldset.totaldepth[time, particle.depth, 
                         particle.lat+particle_dlat, particle.lon+particle_dlon]
         if dzs + particle_ddepth + particle.depth > tdn:
             particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth + dzs)
             #
         elif dzs + particle.depth + particle_ddepth < 0:
-            particle_ddepth = -(dzs + particle.depth + particle_ddepth) #reflection on surface
+            particle_ddepth = -(dzs + 2*particle.depth + particle_ddepth) #reflection on surface
         #
         else:
             particle_ddepth += dzs #apply mixing
@@ -163,19 +163,20 @@ def resuspension(particle, fieldset, time):
         v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * fieldset.v_deg2mps
         # squared horizontal velocity
         H_vel_2 = u_vel**2 + v_vel**2  
+        suspend_rate = 2 * fieldset.sinkvel_marine # so they can actually resuspend
         if e3t_val_o2 < fieldset.lowere3t_o2:
             if vtau_constant_lower <= H_vel_2:
                 particle.status -= 10
-                particle.depth = tdn - min(e3t_val_o2, 0.5/particle.fact)
+                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt) # should be /particle.fact but that has not been calculated
         elif e3t_val_o2 > fieldset.uppere3t_o2:
             if vtau_constant_upper <= H_vel_2:
                 particle.status -= 10
-                particle.depth = tdn - min(e3t_val_o2, 0.5/particle.fact)
+                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt)
         else:
             log_e3t = math.log(e3t_val_o2 * particle.fact)  
             if vtau_constant * (log_e3t - fieldset.log_z_star) ** 2 <= H_vel_2:
                 particle.status -= 10
-                particle.depth = tdn - min(e3t_val_o2, 0.5/particle.fact)
+                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt)
                 
 #
 #### OTHERS ####
@@ -190,4 +191,6 @@ def CheckOutOfBounds(particle, fieldset, time):
 def KeepInOcean(particle, fieldset, time):
     if particle.state == StatusCode.ErrorThroughSurface:
         particle.depth = 0.0
-        particle.state = StatusCode.Success  
+        particle.state = StatusCode.Success
+
+        
