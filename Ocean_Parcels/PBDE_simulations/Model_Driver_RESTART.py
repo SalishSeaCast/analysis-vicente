@@ -19,7 +19,7 @@ def timings(start_time, sim_length, number_outputs):
     data_length = max(sim_length, 1)
     duration = datetime.timedelta(days=sim_length)
     delta_t = 5  # seconds
-    release_particles_every = 3600  # seconds
+    release_particles_every = 1800  # seconds
 
     number_particles = int(min(sim_length, month_days) * 86400 / release_particles_every)
     print("number_particles", number_particles)
@@ -65,24 +65,20 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
                                           allow_time_extrapolation=True, chunksize='auto'))
 
     dt_h = 1 / 3600.
-    field_set.add_constant('sinkvel_sewage', 12.84 * dt_h)
-    field_set.add_constant('sinkvel_marine', 5.52 * dt_h)
-    n_north = 27
-    n_southern = 248
-    value = (-np.log(n_north/n_southern)) / 80 
-    abso = value / 86400
-    deso_s = 3.2 / 86400
-    deso_m = 1.6 / 86400
+    field_set.add_constant('sinkvel_sewage', 12.84 * dt_h) # 12.84 m / hr
+    field_set.add_constant('sinkvel_marine', 5.52 * dt_h) # 2 m / hr    # 5.52 m / hr   # 9 m/hr
+    ratio_MP = 0.13
+    abso = 0.038 / 86400 # Colloidal/Dissolved → Attached to Marine Particle /s
+    deso_s = abso / ratio_MP # Sewage Particle → Colloidal/Dissolved /s
+    deso_m = abso / ratio_MP # Marine Particle → Colloidal/Dissolved /s
     deso_sed = deso_m
     abso_sed = deso_sed * 30. / 70
-    sediment_burying = 1. / (365 * 86400)
 
     field_set.add_constant('abso_probability', 1 - np.exp(-abso * delta_t))
     field_set.add_constant('deso_s_probability', 1 - np.exp(-deso_s * delta_t))
     field_set.add_constant('deso_m_probability', 1 - np.exp(-deso_m * delta_t))
     field_set.add_constant('deso_sed_probability', 1 - np.exp(-deso_sed * delta_t))
     field_set.add_constant('abso_sed_probability', 1 - np.exp(-abso_sed * delta_t))
-    field_set.add_constant('sediment_burying_probability', 1 - np.exp(-sediment_burying * delta_t))
 
     deg2met = 111319.5
     latT = 0.6495
@@ -97,13 +93,9 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     field_set.add_constant('uppere3t_o2', zo * np.exp(kappa / np.sqrt(cdmin)))
 
     tau_crit = 1e-2#0.025 #0.005 #1e-2
-    tau_bury_crit = 0.2
     field_set.add_constant('tau_constant', tau_crit / ((kappa ** 2) * rho))
     field_set.add_constant('tau_constant_lower', tau_crit / (rho * cdmax))
     field_set.add_constant('tau_constant_upper', tau_crit / (rho * cdmin))
-    field_set.add_constant('tau_bury_constant', tau_bury_crit / ((kappa ** 2) * rho))
-    field_set.add_constant('tau_bury_constant_lower', tau_bury_crit / (rho * cdmax))
-    field_set.add_constant('tau_bury_constant_upper', tau_bury_crit / (rho * cdmin))
 
     return field_set, constants
 
