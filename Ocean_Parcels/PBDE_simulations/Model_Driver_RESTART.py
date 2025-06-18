@@ -68,9 +68,9 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     field_set.add_constant('sinkvel_sewage', 12.84 * dt_h) # 12.84 m / hr
     field_set.add_constant('sinkvel_marine', 5.52 * dt_h) # 2 m / hr    # 5.52 m / hr   # 9 m/hr
     ratio_MP = 0.13
-    abso = 0.038 / 86400 # Colloidal/Dissolved → Attached to Marine Particle /s
-    deso_s = abso / ratio_MP # Sewage Particle → Colloidal/Dissolved /s
-    deso_m = abso / ratio_MP # Marine Particle → Colloidal/Dissolved /s
+    abso = (0.038 / 86400)  # Colloidal/Dissolved → Attached to Marine Particle /s
+    deso_s = (abso / ratio_MP) # Sewage Particle → Colloidal/Dissolved /s
+    deso_m = (abso / ratio_MP) # Marine Particle → Colloidal/Dissolved /s
     deso_sed = deso_m
     abso_sed = deso_sed * 30. / 70
 
@@ -92,7 +92,7 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     field_set.add_constant('lowere3t_o2', zo * np.exp(kappa / np.sqrt(cdmax)))
     field_set.add_constant('uppere3t_o2', zo * np.exp(kappa / np.sqrt(cdmin)))
 
-    tau_crit = 0.04 #0.0025 #0.01
+    tau_crit = 0.01 #0.0025 #0.04
     field_set.add_constant('tau_constant', tau_crit / ((kappa ** 2) * rho))
     field_set.add_constant('tau_constant_lower', tau_crit / (rho * cdmax))
     field_set.add_constant('tau_constant_upper', tau_crit / (rho * cdmin))
