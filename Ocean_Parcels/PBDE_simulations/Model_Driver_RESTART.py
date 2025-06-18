@@ -92,7 +92,7 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     field_set.add_constant('lowere3t_o2', zo * np.exp(kappa / np.sqrt(cdmax)))
     field_set.add_constant('uppere3t_o2', zo * np.exp(kappa / np.sqrt(cdmin)))
 
-    tau_crit = 1e-2#0.025 #0.005 #1e-2
+    tau_crit = 0.04 #0.0025 #0.01
     field_set.add_constant('tau_constant', tau_crit / ((kappa ** 2) * rho))
     field_set.add_constant('tau_constant_lower', tau_crit / (rho * cdmax))
     field_set.add_constant('tau_constant_upper', tau_crit / (rho * cdmin))
