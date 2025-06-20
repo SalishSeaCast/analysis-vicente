@@ -566,19 +566,19 @@ def plot_vertical_total_state_profiles(array_total_profiles, array_status_profil
     plt.rcParams.update({'font.size': 12})
     cmap = ListedColormap(['grey', 'white'])
 
-    site_names = ['N1', 'N2', 'C1', 'S1', 'S2',
-                  'H1', 'J1', 'F1', 'HW1']
+    site_names = ['N1', 'N2', 'C1', 'S1'
+                  ,'HW1', 'F1', 'S2','H1', 'J1']
 
     site_coords = [
         (lon_NSoG_N1, lat_NSoG_N1),
         (lon_NSoG_N2, lat_NSoG_N2),
         (lon_CSoG_C1, lat_CSoG_C1),
         (lon_SSoG_S1, lat_SSoG_S1),
+        (lon_Howe_HW1, lat_Howe_HW1),
+        (lon_Fraser_F1, lat_Fraser_F1),
         (lon_SSoG_S2, lat_SSoG_S2),
         (lon_Haro_H1, lat_Haro_H1),
         (lon_Juan_J1, lat_Juan_J1),
-        (lon_Fraser_F1, lat_Fraser_F1),
-        (lon_Howe_HW1, lat_Howe_HW1),
     ]
 
     fig, axes = plt.subplots(nrows=9, ncols=2, figsize=(12, 45), gridspec_kw={'width_ratios': [2, 1]})
@@ -660,7 +660,7 @@ def plot_vertical_state_status(array_total_profiles, array_status_profiles):
     fig, axs = plt.subplots(nrows=9, ncols=3, figsize=(20, 40), sharey=True)
     axs = axs.reshape(9, 3)
 
-    site_names = ['N1', 'N2', 'C1', 'S1', 'S2', 'H1', 'J1', 'F1', 'HW1']
+    site_names = ['N1', 'N2', 'C1', 'S1', 'HW1', 'F1', 'S2', 'H1', 'J1']
 
     for i, site in enumerate(site_names):
         df_total = array_total_profiles[i]
@@ -892,8 +892,8 @@ def volume_region(polygon):
 def volumes():
     regions_volumes = [volume_region(polygon_N1), volume_region(polygon_N2),
                        volume_region(polygon_C1), volume_region(polygon_S1), 
-                       volume_region(polygon_S2), volume_region(polygon_H1),
-                       volume_region(polygon_J1), volume_region(polygon_F1),
-                       volume_region(polygon_HW1)]
-    regions_string = ['N1', 'N2', 'C1', 'S1', 'S2', 'H1', 'J1', 'F1', 'HW1']
+                       volume_region(polygon_HW1),volume_region(polygon_F1),
+                       volume_region(polygon_S2),volume_region(polygon_H1),
+                       volume_region(polygon_J1)]
+    regions_string = ['N1', 'N2', 'C1', 'S1', 'HW1', 'F1', 'S2', 'H1', 'J1']
     return regions_volumes, regions_string
