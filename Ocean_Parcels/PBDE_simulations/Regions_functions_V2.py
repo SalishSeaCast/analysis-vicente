@@ -21,13 +21,20 @@ from shapely.geometry import Polygon, Point
 #
 ############ Grid X and Grid Y points for regions boundaries
 # Northern Strait
-# Subregion Left
-Nx1_1, Ny1_1 = [115,185], [665,650]
-Nx1_2, Ny1_2 = [110,220], [510,565]
+# Subregion Left Up
+Nx1_1, Ny1_1 = [132,170], [665,680]
+Nx1_2, Ny1_2 = [170,200], [680,620]
+Nx1_3, Ny1_3 = [135,200], [620,620]
+#
+# Subregion Left Down
+Nx2_1, Ny2_1 = [135,200], [620,620]
+Nx2_2, Ny2_2 = [200,220], [620,565]
+Nx2_3, Ny2_3 = [170,220], [540,565]
+Nx2_4, Ny2_4 = [135,170], [540,540]
 #Subregion Right
-Nx2_1, Ny2_1 = [228,258], [650,565]
-Nx2_2, Ny2_2 = [220,258], [565,565]
-Nx2_3, Ny2_3 = [185,228], [650,650]
+Nx3_1, Ny3_1 = [228,258], [650,565]
+Nx3_2, Ny3_2 = [220,258], [565,565]
+Nx3_3, Ny3_3 = [185,228], [650,650]
 ###################################
 # Central Strait
 Cx1_1, Cy1_1 = [185,300], [505,505]
@@ -39,11 +46,15 @@ Cx1_5, Cy1_5 = [258,300], [565,505]
 # Southern Strait
 # Subregion North
 Sx1_1, Sy1_1 = [202,292], [505,505]
-Sx1_2, Sy1_2 = [300,320], [503,457]
+Sx1_2, Sy1_2 = [300,315], [505,480]
 Sx1_3, Sy1_3 = [210,238], [500,465]
 Sx1_4, Sy1_4 = [238,245], [465,410]
-Sx1_5, Sy1_5 = [320,302], [457,410]
+Sx1_5, Sy1_5 = [302, 280], [410, 470]
 Sx1_6, Sy1_6 = [245,302], [410,410]
+# Subregion Plume
+SxP_1, SyP_1 = [315,320], [480,457]
+SxP_2, SyP_2 = [320,302], [457,410]
+SxP_3, SyP_3 = [302, 280], [410, 470]
 # Subregion South
 Sx2_1, Sy2_1 = [245,302], [410,410]
 Sx2_2, Sy2_2 = [245,280], [410,350]
@@ -51,16 +62,14 @@ Sx2_3, Sy2_3 = [280,342], [350,315]
 Sx2_4, Sy2_4 = [302,370], [410,390]
 ###################################
 # JdF
-Jx1_1, Jy1_1 = [145,145], [230,320]
-Jx1_2, Jy1_2 = [145,80], [320,410]
-Jx1_3, Jy1_3 = [145,60], [230,280]
-
-# Puget Sound
-Px1, Py1 = [203,312], [230,230]
+Jx1_1, Jy1_1 = [130,130], [230,320]
+Jx1_2, Jy1_2 = [130,80], [320,410]
+Jx1_3, Jy1_3 = [130,60], [230,280]
+#
 # Haro Strait
 Hx1_1, Hy1_1 = [200, 250],[305,300]
 Hx1_2, Hy1_2 = [225, 242],[355,355]
-Hx1_3, Hy1_3 = [244, 247],[355,320]
+Hx1_3, Hy1_3 = [244, 255],[355,320]
 #
 # Fraser River
 Fx1_1, Fy1_1 = [320,302], [457,410]
@@ -68,12 +77,13 @@ Fx1_2, Fy1_2 = [302,370], [410,390]
 Fx1_3, Fy1_3 = [320,370], [457,430]
 #
 # Howe Sound
-HWx1_1, HWy1_1 = [300,320], [503,457]
+HWx1_1, HWy1_1 = [315,320], [480,457]
 HWx1_2, HWy1_2 = [300,350], [503,580]
 HWx1_3, HWy1_3 = [350,395], [580,580]
 HWx1_4, HWy1_4 = [395,395], [580,510]
 HWx1_5, HWy1_5 = [395,345], [510,445]
 HWx1_6, HWy1_6 = [345,320], [445,457]
+HWx1_7, HWy1_7 = [300,315], [505,480]
 #
 ###################################################
 ############ Paths #############
@@ -91,14 +101,21 @@ mask = xr.open_dataset(path['mask'])
 #
 ############## Longitude and Latitude boundary points ##############
 # Northern Strait
-# Subregion Left
+# Subregion Left Up
 N1_lon_1, N1_lat_1 = [mask.nav_lon[Ny1_1[0],Nx1_1[0]].values, mask.nav_lon[Ny1_1[1],Nx1_1[1]].values], [mask.nav_lat[Ny1_1[0],Nx1_1[0]].values, mask.nav_lat[Ny1_1[1],Nx1_1[1]].values]
 N1_lon_2, N1_lat_2 = [mask.nav_lon[Ny1_2[0],Nx1_2[0]].values, mask.nav_lon[Ny1_2[1],Nx1_2[1]].values], [mask.nav_lat[Ny1_2[0],Nx1_2[0]].values, mask.nav_lat[Ny1_2[1],Nx1_2[1]].values]
+N1_lon_3, N1_lat_3 = [mask.nav_lon[Ny1_3[0],Nx1_3[0]].values, mask.nav_lon[Ny1_3[1],Nx1_3[1]].values], [mask.nav_lat[Ny1_3[0],Nx1_3[0]].values, mask.nav_lat[Ny1_3[1],Nx1_3[1]].values]
 #
-# Subregion Right
+# Subregion Left Down
 N2_lon_1, N2_lat_1 = [mask.nav_lon[Ny2_1[0],Nx2_1[0]].values, mask.nav_lon[Ny2_1[1],Nx2_1[1]].values], [mask.nav_lat[Ny2_1[0],Nx2_1[0]].values, mask.nav_lat[Ny2_1[1],Nx2_1[1]].values]
 N2_lon_2, N2_lat_2 = [mask.nav_lon[Ny2_2[0],Nx2_2[0]].values, mask.nav_lon[Ny2_2[1],Nx2_2[1]].values], [mask.nav_lat[Ny2_2[0],Nx2_2[0]].values, mask.nav_lat[Ny2_2[1],Nx2_2[1]].values]
 N2_lon_3, N2_lat_3 = [mask.nav_lon[Ny2_3[0],Nx2_3[0]].values, mask.nav_lon[Ny2_3[1],Nx2_3[1]].values], [mask.nav_lat[Ny2_3[0],Nx2_3[0]].values, mask.nav_lat[Ny2_3[1],Nx2_3[1]].values]
+N2_lon_4, N2_lat_4 = [mask.nav_lon[Ny2_4[0],Nx2_4[0]].values, mask.nav_lon[Ny2_4[1],Nx2_4[1]].values], [mask.nav_lat[Ny2_4[0],Nx2_4[0]].values, mask.nav_lat[Ny2_4[1],Nx2_4[1]].values]
+#Subregion Right
+N3_lon_1, N3_lat_1 = [mask.nav_lon[Ny3_1[0],Nx3_1[0]].values, mask.nav_lon[Ny3_1[1],Nx3_1[1]].values], [mask.nav_lat[Ny3_1[0],Nx3_1[0]].values, mask.nav_lat[Ny3_1[1],Nx3_1[1]].values]
+N3_lon_2, N3_lat_2 = [mask.nav_lon[Ny3_2[0],Nx3_2[0]].values, mask.nav_lon[Ny3_2[1],Nx3_2[1]].values], [mask.nav_lat[Ny3_2[0],Nx3_2[0]].values, mask.nav_lat[Ny3_2[1],Nx3_2[1]].values]
+N3_lon_3, N3_lat_3 = [mask.nav_lon[Ny3_3[0],Nx3_3[0]].values, mask.nav_lon[Ny3_3[1],Nx3_3[1]].values], [mask.nav_lat[Ny3_3[0],Nx3_3[0]].values, mask.nav_lat[Ny3_3[1],Nx3_3[1]].values]
+
 #
 # Central Strait
 C1_lon_1, C1_lat_1 = [mask.nav_lon[Cy1_1[0],Cx1_1[0]].values, mask.nav_lon[Cy1_1[1],Cx1_1[1]].values], [mask.nav_lat[Cy1_1[0],Cx1_1[0]].values, mask.nav_lat[Cy1_1[1],Cx1_1[1]].values]
@@ -114,6 +131,11 @@ S1_lon_3, S1_lat_3 = [mask.nav_lon[Sy1_3[0],Sx1_3[0]].values, mask.nav_lon[Sy1_3
 S1_lon_4, S1_lat_4 = [mask.nav_lon[Sy1_4[0],Sx1_4[0]].values, mask.nav_lon[Sy1_4[1],Sx1_4[1]].values], [mask.nav_lat[Sy1_4[0],Sx1_4[0]].values, mask.nav_lat[Sy1_4[1],Sx1_4[1]].values]
 S1_lon_5, S1_lat_5 = [mask.nav_lon[Sy1_5[0],Sx1_5[0]].values, mask.nav_lon[Sy1_5[1],Sx1_5[1]].values], [mask.nav_lat[Sy1_5[0],Sx1_5[0]].values, mask.nav_lat[Sy1_5[1],Sx1_5[1]].values]
 S1_lon_6, S1_lat_6 = [mask.nav_lon[Sy1_6[0],Sx1_6[0]].values, mask.nav_lon[Sy1_6[1],Sx1_6[1]].values], [mask.nav_lat[Sy1_6[0],Sx1_6[0]].values, mask.nav_lat[Sy1_6[1],Sx1_6[1]].values]
+# Subregion Plume
+SP_lon_1, SP_lat_1 = [mask.nav_lon[SyP_1[0],SxP_1[0]].values, mask.nav_lon[SyP_1[1],SxP_1[1]].values], [mask.nav_lat[SyP_1[0],SxP_1[0]].values, mask.nav_lat[SyP_1[1],SxP_1[1]].values]
+SP_lon_2, SP_lat_2 = [mask.nav_lon[SyP_2[0],SxP_2[0]].values, mask.nav_lon[SyP_2[1],SxP_2[1]].values], [mask.nav_lat[SyP_2[0],SxP_2[0]].values, mask.nav_lat[SyP_2[1],SxP_2[1]].values]
+SP_lon_3, SP_lat_3 = [mask.nav_lon[SyP_3[0],SxP_3[0]].values, mask.nav_lon[SyP_3[1],SxP_3[1]].values], [mask.nav_lat[SyP_3[0],SxP_3[0]].values, mask.nav_lat[SyP_3[1],SxP_3[1]].values]
+
 # Subregion South
 S2_lon_1, S2_lat_1 = [mask.nav_lon[Sy2_1[0],Sx2_1[0]].values, mask.nav_lon[Sy2_1[1],Sx2_1[1]].values], [mask.nav_lat[Sy2_1[0],Sx2_1[0]].values, mask.nav_lat[Sy2_1[1],Sx2_1[1]].values]
 S2_lon_2, S2_lat_2 = [mask.nav_lon[Sy2_2[0],Sx2_2[0]].values, mask.nav_lon[Sy2_2[1],Sx2_2[1]].values], [mask.nav_lat[Sy2_2[0],Sx2_2[0]].values, mask.nav_lat[Sy2_2[1],Sx2_2[1]].values]
@@ -142,26 +164,36 @@ HW1_lon_3, HW1_lat_3 = [mask.nav_lon[HWy1_3[0],HWx1_3[0]].values, mask.nav_lon[H
 HW1_lon_4, HW1_lat_4 = [mask.nav_lon[HWy1_4[0],HWx1_4[0]].values, mask.nav_lon[HWy1_4[1],HWx1_4[1]].values], [mask.nav_lat[HWy1_4[0],HWx1_4[0]].values, mask.nav_lat[HWy1_4[1],HWx1_4[1]].values]
 HW1_lon_5, HW1_lat_5 = [mask.nav_lon[HWy1_5[0],HWx1_5[0]].values, mask.nav_lon[HWy1_5[1],HWx1_5[1]].values], [mask.nav_lat[HWy1_5[0],HWx1_5[0]].values, mask.nav_lat[HWy1_5[1],HWx1_5[1]].values]
 HW1_lon_6, HW1_lat_6 = [mask.nav_lon[HWy1_6[0],HWx1_6[0]].values, mask.nav_lon[HWy1_6[1],HWx1_6[1]].values], [mask.nav_lat[HWy1_6[0],HWx1_6[0]].values, mask.nav_lat[HWy1_6[1],HWx1_6[1]].values]
-
+HW1_lon_7, HW1_lat_7 = [mask.nav_lon[HWy1_7[0],HWx1_7[0]].values, mask.nav_lon[HWy1_7[1],HWx1_7[1]].values], [mask.nav_lat[HWy1_7[0],HWx1_7[0]].values, mask.nav_lat[HWy1_7[1],HWx1_7[1]].values]
 ############# POLYGONS PER REGION ##########
-#
+# Northern Strait Subregion Left Up
 polygon_lon_lat_N1 = [
     (N1_lon_1[0], N1_lat_1[0]),
     (N1_lon_1[1], N1_lat_1[1]),
     (N1_lon_2[1], N1_lat_2[1]),
-    (N1_lon_2[0], N1_lat_2[0]),
-    (N1_lon_1[0], N1_lat_1[0])
+    (N1_lon_3[1], N1_lat_3[1]),
+    (N1_lon_3[0], N1_lat_3[0])
 ]
 polygon_coors_N1 = Polygon(polygon_lon_lat_N1)
-#Subregion Right
+# Northern Strait Subregion Left Down
 polygon_lon_lat_N2 = [
-    (N2_lon_3[0], N2_lat_3[0]),
     (N2_lon_1[0], N2_lat_1[0]),
+    (N2_lon_1[1], N2_lat_1[1]),
     (N2_lon_2[1], N2_lat_2[1]),
-    (N2_lon_2[0], N2_lat_2[0])
+    (N2_lon_3[1], N2_lat_3[1]),
+    (N2_lon_4[1], N2_lat_4[1]),
+    (N2_lon_4[0], N2_lat_4[0])
 ]
 polygon_coors_N2 = Polygon(polygon_lon_lat_N2)
-#**Central Strait Polygon**
+# Northern Strait Subregion Right
+polygon_lon_lat_N3 = [
+    (N3_lon_3[0], N3_lat_3[0]),
+    (N3_lon_1[0], N3_lat_1[0]),
+    (N3_lon_2[1], N3_lat_2[1]),
+    (N3_lon_2[0], N3_lat_2[0])
+]
+polygon_coors_N3 = Polygon(polygon_lon_lat_N3)
+# Central Strait
 polygon_lon_lat_C1 = [
     (C1_lon_1[1], C1_lat_1[1]),
     (C1_lon_1[0], C1_lat_1[0]),
@@ -171,18 +203,27 @@ polygon_lon_lat_C1 = [
     (C1_lon_4[1], C1_lat_4[1])
 ]
 polygon_coors_C1 = Polygon(polygon_lon_lat_C1)
-#**Southern Strait Polygon**
-#Subregion North
+
+# Southern Strait Subregion North
 polygon_lon_lat_S1 = [
     (S1_lon_1[0], S1_lat_1[0]),
     (S1_lon_1[1], S1_lat_1[1]),
     (S1_lon_2[1], S1_lat_2[1]),
     (S1_lon_5[1], S1_lat_5[1]),
+    (S1_lon_6[1], S1_lat_6[1]),
     (S1_lon_6[0], S1_lat_6[0]),
     (S1_lon_4[0], S1_lat_4[0])
 ]
 polygon_coors_S1 = Polygon(polygon_lon_lat_S1)
-#Subregion South
+# Southern Strait Subregion Plume
+polygon_lon_lat_SP = [
+    (SP_lon_1[0], SP_lat_1[0]),
+    (SP_lon_1[1], SP_lat_1[1]),
+    (SP_lon_2[1], SP_lat_2[1]),
+    (SP_lon_3[1], SP_lat_3[1])
+]
+polygon_coors_SP = Polygon(polygon_lon_lat_SP)
+# Southern Strait Subregion South
 polygon_lon_lat_S2 = [
     (S2_lon_1[1], S2_lat_1[1]),
     (S2_lon_1[0], S2_lat_1[0]),
@@ -191,7 +232,7 @@ polygon_lon_lat_S2 = [
     (S2_lon_4[1], S2_lat_4[1])
 ]
 polygon_coors_S2 = Polygon(polygon_lon_lat_S2)
-#**Haro Strait Polygon**
+# Haro Strait
 polygon_lon_lat_H1 = [
     (H1_lon_1[1], H1_lat_1[1]),
     (H1_lon_1[0], H1_lat_1[0]),
@@ -200,7 +241,7 @@ polygon_lon_lat_H1 = [
 
 ]
 polygon_coors_H1 = Polygon(polygon_lon_lat_H1)
-#**Juan de Fuca Strait Polygon**
+# Juan de Fuca Strait 
 polygon_lon_lat_J1 = [
     (J1_lon_1[0], J1_lat_1[0]),
     (J1_lon_1[1], J1_lat_1[1]),
@@ -209,7 +250,7 @@ polygon_lon_lat_J1 = [
 
 ]
 polygon_coors_J1 = Polygon(polygon_lon_lat_J1)
-#**Fraser River**
+# Fraser River
 polygon_lon_lat_F1 = [
     (F1_lon_1[0], F1_lat_1[0]),
     (F1_lon_1[1], F1_lat_1[1]),
@@ -217,10 +258,11 @@ polygon_lon_lat_F1 = [
     (F1_lon_3[1], F1_lat_3[1])
 ]
 polygon_coors_F1 = Polygon(polygon_lon_lat_F1)
-#**Howe Sound**
+# Howe Sound
 polygon_lon_lat_HW1 = [
     (HW1_lon_1[1], HW1_lat_1[1]),
     (HW1_lon_1[0], HW1_lat_1[0]),
+    (HW1_lon_7[0], HW1_lat_7[0]),
     (HW1_lon_2[1], HW1_lat_2[1]),
     (HW1_lon_3[1], HW1_lat_3[1]),
     (HW1_lon_4[1], HW1_lat_4[1]),
@@ -252,8 +294,10 @@ def inside_polygon_lon_lat(polygon, mask_path = path['mask']):
 #
 lon_NSoG_N1, lat_NSoG_N1 = inside_polygon_lon_lat(polygon_coors_N1)
 lon_NSoG_N2, lat_NSoG_N2 = inside_polygon_lon_lat(polygon_coors_N2)
+lon_NSoG_N3, lat_NSoG_N3 = inside_polygon_lon_lat(polygon_coors_N3)
 lon_CSoG_C1, lat_CSoG_C1 = inside_polygon_lon_lat(polygon_coors_C1)
 lon_SSoG_S1, lat_SSoG_S1 = inside_polygon_lon_lat(polygon_coors_S1)
+lon_SSoG_SP, lat_SSoG_SP = inside_polygon_lon_lat(polygon_coors_SP)
 lon_SSoG_S2, lat_SSoG_S2 = inside_polygon_lon_lat(polygon_coors_S2)
 lon_Haro_H1, lat_Haro_H1 = inside_polygon_lon_lat(polygon_coors_H1)
 lon_Juan_J1, lat_Juan_J1 = inside_polygon_lon_lat(polygon_coors_J1)
@@ -301,8 +345,10 @@ def polygon_definition(filename):
     polygons_dict = {
         'N1': (polygon_coors_N1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
         'N2': (polygon_coors_N2, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
+        'N3': (polygon_coors_N3, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
         'C1': (polygon_coors_C1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
         'S1': (polygon_coors_S1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
+        'SP': (polygon_coors_SP, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
         'S2': (polygon_coors_S2, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
         'H1': (polygon_coors_H1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
         'J1': (polygon_coors_J1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
@@ -566,14 +612,16 @@ def plot_vertical_total_state_profiles(array_total_profiles, array_status_profil
     plt.rcParams.update({'font.size': 12})
     cmap = ListedColormap(['grey', 'white'])
 
-    site_names = ['N1', 'N2', 'C1', 'S1'
+    site_names = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP'
                   ,'HW1', 'F1', 'S2','H1', 'J1']
 
     site_coords = [
         (lon_NSoG_N1, lat_NSoG_N1),
         (lon_NSoG_N2, lat_NSoG_N2),
+        (lon_NSoG_N3, lat_NSoG_N3),
         (lon_CSoG_C1, lat_CSoG_C1),
         (lon_SSoG_S1, lat_SSoG_S1),
+        (lon_SSoG_SP, lat_SSoG_SP),
         (lon_Howe_HW1, lat_Howe_HW1),
         (lon_Fraser_F1, lat_Fraser_F1),
         (lon_SSoG_S2, lat_SSoG_S2),
@@ -581,9 +629,9 @@ def plot_vertical_total_state_profiles(array_total_profiles, array_status_profil
         (lon_Juan_J1, lat_Juan_J1),
     ]
 
-    fig, axes = plt.subplots(nrows=9, ncols=2, figsize=(12, 45), gridspec_kw={'width_ratios': [2, 1]})
+    fig, axes = plt.subplots(nrows=len(array_total_profiles), ncols=2, figsize=(12, int(len(array_total_profiles)*5)), gridspec_kw={'width_ratios': [2, 1]})
 
-    for i in range(9):
+    for i in range(len(array_total_profiles)):
         ax_plot = axes[i, 0]
         ax_map = axes[i, 1]
 
@@ -660,7 +708,8 @@ def plot_vertical_state_status(array_total_profiles, array_status_profiles):
     fig, axs = plt.subplots(nrows=9, ncols=3, figsize=(20, 40), sharey=True)
     axs = axs.reshape(9, 3)
 
-    site_names = ['N1', 'N2', 'C1', 'S1', 'HW1', 'F1', 'S2', 'H1', 'J1']
+    site_names = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP'
+                  ,'HW1', 'F1', 'S2','H1', 'J1']
 
     for i, site in enumerate(site_names):
         df_total = array_total_profiles[i]
@@ -779,18 +828,29 @@ polygon_coords_N1 = [
     (Nx1_1[0], Ny1_1[0]),
     (Nx1_1[1], Ny1_1[1]),
     (Nx1_2[1], Ny1_2[1]),
-    (Nx1_1[0], Ny1_2[0]),
-    (Nx1_1[0], Ny1_1[0])
+    (Nx1_3[1], Ny1_3[1]),
+    (Nx1_3[0], Ny1_3[0])
 ]
 polygon_N1 = Polygon(polygon_coords_N1)
 #Subregion Right
 polygon_coords_N2 = [
-    (Nx2_3[0], Ny2_3[0]),
     (Nx2_1[0], Ny2_1[0]),
+    (Nx2_1[1], Ny2_1[1]),
     (Nx2_2[1], Ny2_2[1]),
-    (Nx2_2[0], Ny2_2[0])
+    (Nx2_3[1], Ny2_3[1]),
+    (Nx2_4[1], Ny2_4[1]),
+    (Nx2_4[0], Ny2_4[0])
 ]
 polygon_N2 = Polygon(polygon_coords_N2)
+#
+polygon_coords_N3 = [
+    (Nx3_3[0], Ny3_3[0]),
+    (Nx3_1[0], Ny3_1[0]),
+    (Nx3_2[1], Ny3_2[1]),
+    (Nx3_2[0], Ny3_2[0])
+]
+polygon_N3 = Polygon(polygon_coords_N3)
+#
 #Central Strait
 polygon_coords_C1 = [
     (Cx1_1[1], Cy1_1[1]),
@@ -808,10 +868,20 @@ polygon_coords_S1 = [
     (Sx1_1[1], Sy1_1[1]),
     (Sx1_2[1], Sy1_2[1]),
     (Sx1_5[1], Sy1_5[1]),
+    (Sx1_6[1], Sy1_6[1]),
     (Sx1_6[0], Sy1_6[0]),
     (Sx1_4[0], Sy1_4[0])
 ]
 polygon_S1 = Polygon(polygon_coords_S1)
+#
+polygon_coords_SP = [
+    (SxP_1[0], SyP_1[0]),
+    (SxP_1[1], SyP_1[1]),
+    (SxP_2[1], SyP_2[1]),
+    (SxP_3[1], SyP_3[1])
+]
+polygon_SP = Polygon(polygon_coords_SP)
+#
 #Subregion South
 polygon_coords_S2 = [
     (Sx2_1[1], Sy2_1[1]),
@@ -852,6 +922,7 @@ polygon_F1 = Polygon(polygon_coords_F1)
 polygon_coords_HW1 = [
     (HWx1_1[1], HWy1_1[1]),
     (HWx1_1[0], HWy1_1[0]),
+    (HWx1_7[0], HWy1_7[0]),
     (HWx1_2[1], HWy1_2[1]),
     (HWx1_3[1], HWy1_3[1]),
     (HWx1_4[1], HWy1_4[1]),
@@ -890,10 +961,9 @@ def volume_region(polygon):
     return volume_in_polygon_water
 #
 def volumes():
-    regions_volumes = [volume_region(polygon_N1), volume_region(polygon_N2),
-                       volume_region(polygon_C1), volume_region(polygon_S1), 
-                       volume_region(polygon_HW1),volume_region(polygon_F1),
-                       volume_region(polygon_S2),volume_region(polygon_H1),
-                       volume_region(polygon_J1)]
-    regions_string = ['N1', 'N2', 'C1', 'S1', 'HW1', 'F1', 'S2', 'H1', 'J1']
+    regions_volumes = [volume_region(polygon_N1), volume_region(polygon_N2), volume_region(polygon_N3),
+                       volume_region(polygon_C1), volume_region(polygon_S1), volume_region(polygon_SP), 
+                       volume_region(polygon_HW1), volume_region(polygon_F1), volume_region(polygon_S2),
+                       volume_region(polygon_H1), volume_region(polygon_J1)]
+    regions_string = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP', 'HW1', 'F1', 'S2', 'H1', 'J1']
     return regions_volumes, regions_string

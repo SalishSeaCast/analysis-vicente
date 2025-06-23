@@ -67,10 +67,10 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     dt_h = 1 / 3600.
     field_set.add_constant('sinkvel_sewage', 12.84 * dt_h) # 12.84 m / hr
     field_set.add_constant('sinkvel_marine', 5.52 * dt_h) # 2 m / hr    # 5.52 m / hr   # 9 m/hr
-    ratio_MP = 0.13
+    ratio_MC = 0.012 # Ratio between Dissolved and Particulate PBDEs in the water column (Based on Sun et al., 2023)
     abso = (0.038 / 86400)  # Colloidal/Dissolved → Attached to Marine Particle /s
-    deso_s = (abso / ratio_MP) # Sewage Particle → Colloidal/Dissolved /s
-    deso_m = (abso / ratio_MP) # Marine Particle → Colloidal/Dissolved /s
+    deso_s = (abso / ratio_MC) # Sewage Particle → Colloidal/Dissolved /s
+    deso_m = (abso / ratio_MC) # Marine Particle → Colloidal/Dissolved /s
     deso_sed = deso_m
     abso_sed = deso_sed * 30. / 70
 
