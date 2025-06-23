@@ -19,7 +19,7 @@ def timings(start_time, sim_length, number_outputs):
     data_length = max(sim_length, 1)
     duration = datetime.timedelta(days=sim_length)
     delta_t = 5  # seconds
-    release_particles_every = 1800  # seconds
+    release_particles_every = 900  # seconds
 
     number_particles = int(min(sim_length, month_days) * 86400 / release_particles_every)
     print("number_particles", number_particles)
