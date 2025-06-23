@@ -705,8 +705,8 @@ def plot_vertical_total_state_profiles(array_total_profiles, array_status_profil
 def plot_vertical_state_status(array_total_profiles, array_status_profiles):
     plt.rcParams.update({'font.size': 16})
 
-    fig, axs = plt.subplots(nrows=9, ncols=3, figsize=(20, 40), sharey=True)
-    axs = axs.reshape(9, 3)
+    fig, axs = plt.subplots(nrows=len(array_total_profiles), ncols=3, figsize=(20, 40), sharey=True)
+    axs = axs.reshape(len(array_total_profiles), 3)
 
     site_names = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP'
                   ,'HW1', 'F1', 'S2','H1', 'J1']
