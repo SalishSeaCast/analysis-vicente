@@ -79,6 +79,7 @@ def metrics_table(filename, title = 'Simulation Metrics'):
     ####
     ####
     #### METRICS TABLE ####
+    plt.rcParams.update({'font.size': 30})
     column_labels = ['Simulation Label','M/C Water Column', 'M/C Sediment', 'N1/S1 Colloidal Water Column', 'Status 7 (Out JdF)',
                 'Total Colloidal Water Column', 'Mean Depth Water Column', 'Mean Depth Sediment']
     #
@@ -104,10 +105,11 @@ def metrics_table(filename, title = 'Simulation Metrics'):
     )
     #
     for (row, col), cell in table.get_celld().items():
-        cell.set_fontsize(50)
         cell.set_height(0.3)
+        cell.get_text().set_fontsize(30)
         if row == 0:
-            cell.set_text_props(weight='bold')
+            cell.get_text().set_weight('bold')
+    
     #
     table.scale(1.2, 2.5)
     plt.tight_layout()
