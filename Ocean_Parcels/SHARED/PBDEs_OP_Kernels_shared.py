@@ -4,11 +4,27 @@
 # Force kernels to not move particles when not released!! <---- Not to move or change state
 #
 def PBDEs_states(particle, fieldset, time):    
-        
+
+    particle.tmask = fieldset.tmask[0, particle.depth, particle.lat, particle.lon]
+    particle.umask = fieldset.umask[0, particle.depth, particle.lat, particle.lon]
+    particle.vmask = fieldset.vmask[0, particle.depth, particle.lat, particle.lon]
+    particle.fmask = fieldset.fmask[0, particle.depth, particle.lat, particle.lon]
+    
+
+    (uus, vvs, wws) = fieldset.UVW[time, particle.depth, particle.lat, particle.lon]
+    particle.uvalue = uus
+    particle.vvalue = vvs
+    particle.wvalue = wws
+
+    particle.totaldepth = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon]
+    
+    
     if (time > particle.release_time):
         if particle.status < 0:
             particle.status = - particle.status
         else:
+            if particle.status > 100:
+                particle.status -= 100
             random_value = ParcelsRandom.random()
         # Status updates
             if particle.status == 1 and random_value < fieldset.deso_s_probability:
@@ -64,7 +80,7 @@ def Sinking(particle, fieldset, time):
 def Advection(particle, fieldset, time):
     #print('Advection kernel is running') 
     # Advection for all PBDEs in status 1, 2 and 3
-    if particle.status == 1 or particle.status == 2 or particle.status == 3: 
+    if particle.status == 1  or particle.status == 2 or particle.status == 3: 
         ssh = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
         sshn = fieldset.sossheig[time+particle.dt, particle.depth, particle.lat, particle.lon] #SSH(t+dt) sea surface height in the next time step
         td = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon]#Total_depth 
@@ -126,11 +142,17 @@ def turb_mix(particle,fieldset,time):
         dzs = (dgrad + d_random)
         
         #Apply turbulent mixing.       
-        # reflect if mixed into bottom
+        # stick if mixed into bottom
         tdn = fieldset.totaldepth[time, particle.depth, 
                         particle.lat+particle_dlat, particle.lon+particle_dlon]
         if dzs + particle_ddepth + particle.depth > tdn:
-            particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth + dzs)
+            particle.depth  = tdn # Get particles attached to the bottom when they reach it
+            particle_ddepth = 0 # As I've put them on the bottom and that's where I want them.
+            particle.status += 10 
+            particle.lat = particle.lat + particle_dlat
+            particle_dlat = 0
+            particle.lon = particle.lon + particle_dlon
+            particle_dlon = 0
             #
         elif dzs + particle.depth + particle_ddepth < 0:
             particle_ddepth = -(dzs + 2*particle.depth + particle_ddepth) #reflection on surface
@@ -153,30 +175,45 @@ def resuspension(particle, fieldset, time):
             vtau_constant_lower = fieldset.tau_constant_lower
             vtau_constant_upper = fieldset.tau_constant_upper
         #
+        
         tdn = fieldset.totaldepth[time, particle.depth, 
                         particle.lat, particle.lon]                 # even if new, already moved
-        e3t_val_o2 = fieldset.e3t[time, tdn, particle.lat, particle.lon]
-        bat_particle = tdn - e3t_val_o2  
+        ssh = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
+        particle.fact = (1 + ssh / tdn)
+        e3t_val_o2 = fieldset.e3t[time, tdn, particle.lat, particle.lon] * 0.5
+        particle.e3t = e3t_val_o2
+        bat_particle = max(tdn - e3t_val_o2, 0.5 / particle.fact) 
         #
         # horizontal velocities in m/s  
         u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * fieldset.u_deg2mps
         v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * fieldset.v_deg2mps
+        
         # squared horizontal velocity
         H_vel_2 = u_vel**2 + v_vel**2  
         suspend_rate = 2 * fieldset.sinkvel_marine # so they can actually resuspend
         if e3t_val_o2 < fieldset.lowere3t_o2:
             if vtau_constant_lower <= H_vel_2:
-                particle.status -= 10
-                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt) # should be /particle.fact but that has not been calculated
+                particle.status += 90
+                particle.stuck = 0
+                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt / particle.fact) # should be /particle.fact but that has not been calculated
+            else:
+                particle.stuck += 1
         elif e3t_val_o2 > fieldset.uppere3t_o2:
             if vtau_constant_upper <= H_vel_2:
-                particle.status -= 10
-                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt)
+                particle.status += 90
+                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt / particle.fact)
+                particle.stuck = 0
+            else:
+                particle.stuck += 1
         else:
-            log_e3t = math.log(e3t_val_o2 * particle.fact)  
+            log_e3t = math.log(e3t_val_o2 / particle.fact)  # particle.fact not calculated!!!
             if vtau_constant * (log_e3t - fieldset.log_z_star) ** 2 <= H_vel_2:
-                particle.status -= 10
-                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt)
+                particle.status += 90
+                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt /particle.fact)
+                particle.stuck = 0
+            else:
+                particle.stuck += 1
+
                 
 #
 #### OTHERS ####
