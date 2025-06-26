@@ -4,20 +4,6 @@
 # Force kernels to not move particles when not released!! <---- Not to move or change state
 #
 def PBDEs_states(particle, fieldset, time):    
-
-    particle.tmask = fieldset.tmask[0, particle.depth, particle.lat, particle.lon]
-    particle.umask = fieldset.umask[0, particle.depth, particle.lat, particle.lon]
-    particle.vmask = fieldset.vmask[0, particle.depth, particle.lat, particle.lon]
-    particle.fmask = fieldset.fmask[0, particle.depth, particle.lat, particle.lon]
-    
-
-    (uus, vvs, wws) = fieldset.UVW[time, particle.depth, particle.lat, particle.lon]
-    particle.uvalue = uus
-    particle.vvalue = vvs
-    particle.wvalue = wws
-
-    particle.totaldepth = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon]
-    
     
     if (time > particle.release_time):
         if particle.status < 0:
@@ -213,6 +199,19 @@ def resuspension(particle, fieldset, time):
                 particle.stuck = 0
             else:
                 particle.stuck += 1
+
+    particle.tmask = fieldset.tmask[0, particle.depth, particle.lat, particle.lon]
+    particle.umask = fieldset.umask[0, particle.depth, particle.lat, particle.lon]
+    particle.vmask = fieldset.vmask[0, particle.depth, particle.lat, particle.lon]
+    particle.fmask = fieldset.fmask[0, particle.depth, particle.lat, particle.lon]
+    
+
+    (uus, vvs, wws) = fieldset.UVW[time, particle.depth, particle.lat, particle.lon]
+    particle.uvalue = uus
+    particle.vvalue = vvs
+    particle.wvalue = wws
+
+    particle.totaldepth = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon]
 
                 
 #
