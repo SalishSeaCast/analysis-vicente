@@ -97,7 +97,7 @@ def Advection(particle, fieldset, time):
         wa = (w1 + 2*w2 + 2*w3 + w4) /6.
         particle_dlon = (u1 + 2*u2 + 2*u3 + u4) / 6. * particle.dt
         particle_dlat = (v1 + 2*v2 + 2*v3 + v4) / 6. * particle.dt
-        particle_ddepth = particle_ddepth + wa/particle.fact + VVL
+        particle_ddepth = particle_ddepth + wa/particle.fact * particle.dt + VVL
         #
         if particle_ddepth + particle.depth < 0:
             particle_ddepth = - (2 * particle.depth + particle_ddepth)
@@ -134,8 +134,10 @@ def turb_mix(particle,fieldset,time):
         tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
                         particle.lat+particle_dlat, particle.lon+particle_dlon]
         if dzs + particle_ddepth + particle.depth > tdn:
-            particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth + dzs)
-            #
+            particle.depth = tdn #2 * tdn - (2* particle.depth + particle_ddepth + dzs)
+            particle_ddepth = 0
+            # add status for sedimented (11, 12 or 13) !!
+        #
         elif dzs + particle.depth + particle_ddepth < 0:
             particle_ddepth = -(dzs + 2 * particle.depth + particle_ddepth) #reflection on surface
         #
