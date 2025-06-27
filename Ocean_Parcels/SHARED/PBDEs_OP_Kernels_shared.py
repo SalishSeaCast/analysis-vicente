@@ -3,7 +3,9 @@
 #
 # Force kernels to not move particles when not released!! <---- Not to move or change state
 #
-def PBDEs_states(particle, fieldset, time):    
+def PBDEs_states(particle, fieldset, time):  
+
+    particle.steps = 0
     
     if (time > particle.release_time):
         if particle.status < 0:
@@ -48,18 +50,20 @@ def Sinking(particle, fieldset, time):
     particle_ddepth = 0
     if particle.status == 1:
         particle_ddepth += fieldset.sinkvel_sewage * particle.dt
+        particle.steps += 1
     #Sewage Particles sink fast        
     elif particle.status == 3:
         particle_ddepth += fieldset.sinkvel_marine * particle.dt 
 
     # do settling here
     if particle.status == 1 or particle.status == 3:
-        td = fieldset.totaldepth[time, particle.depth, 
+        tda = fieldset.totaldepth[time, particle.depth, 
                         particle.lat, particle.lon]
-        if particle_ddepth + particle.depth > td:
-            particle.depth  = td # Get particles attached to the bottom when they reach it
+        if particle_ddepth + particle.depth > tda:
+            particle.depth  = tda # Get particles attached to the bottom when they reach it
             particle_ddepth = 0 # As I've put them on the bottom and that's where I want them.
             particle.status += 10 
+            particle.steps += 10
     
 #
 #### ADVECTION ####
@@ -95,7 +99,8 @@ def Advection(particle, fieldset, time):
         wa = (w1 + 2*w2 + 2*w3 + w4) /6.
         particle_dlon = (u1 + 2*u2 + 2*u3 + u4) / 6. * particle.dt
         particle_dlat = (v1 + 2*v2 + 2*v3 + v4) / 6. * particle.dt
-        particle_ddepth = particle_ddepth + wa/particle.fact + VVL
+        particle_ddepth = particle_ddepth + wa/particle.fact * particle.dt + VVL
+        particle.steps += 100
         
         if particle_ddepth + particle.depth < 0:
             particle_ddepth = - (2 * particle.depth + particle_ddepth)
@@ -139,6 +144,7 @@ def turb_mix(particle,fieldset,time):
             particle_dlat = 0
             particle.lon = particle.lon + particle_dlon
             particle_dlon = 0
+            particle.steps += 1000
             #
         elif dzs + particle.depth + particle_ddepth < 0:
             particle_ddepth = -(dzs + 2*particle.depth + particle_ddepth) #reflection on surface
@@ -162,13 +168,13 @@ def resuspension(particle, fieldset, time):
             vtau_constant_upper = fieldset.tau_constant_upper
         #
         
-        tdn = fieldset.totaldepth[time, particle.depth, 
+        tdr = fieldset.totaldepth[time, particle.depth, 
                         particle.lat, particle.lon]                 # even if new, already moved
         ssh = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
-        particle.fact = (1 + ssh / tdn)
-        e3t_val_o2 = fieldset.e3t[time, tdn, particle.lat, particle.lon] * 0.5
+        particle.fact = (1 + ssh / tdr)
+        e3t_val_o2 = fieldset.e3t[time, tdr, particle.lat, particle.lon] * 0.5
         particle.e3t = e3t_val_o2
-        bat_particle = max(tdn - e3t_val_o2, 0.5 / particle.fact) 
+        bat_particle = max(tdr - e3t_val_o2, 0.5 / particle.fact) 
         #
         # horizontal velocities in m/s  
         u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * fieldset.u_deg2mps
@@ -181,13 +187,13 @@ def resuspension(particle, fieldset, time):
             if vtau_constant_lower <= H_vel_2:
                 particle.status += 90
                 particle.stuck = 0
-                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt / particle.fact) # should be /particle.fact but that has not been calculated
+                particle.depth = tdr - min(e3t_val_o2, suspend_rate*particle.dt / particle.fact) # should be /particle.fact but that has not been calculated
             else:
                 particle.stuck += 1
         elif e3t_val_o2 > fieldset.uppere3t_o2:
             if vtau_constant_upper <= H_vel_2:
                 particle.status += 90
-                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt / particle.fact)
+                particle.depth = tdr - min(e3t_val_o2, suspend_rate*particle.dt / particle.fact)
                 particle.stuck = 0
             else:
                 particle.stuck += 1
@@ -195,7 +201,7 @@ def resuspension(particle, fieldset, time):
             log_e3t = math.log(e3t_val_o2 / particle.fact)  # particle.fact not calculated!!!
             if vtau_constant * (log_e3t - fieldset.log_z_star) ** 2 <= H_vel_2:
                 particle.status += 90
-                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt /particle.fact)
+                particle.depth = tdr - min(e3t_val_o2, suspend_rate*particle.dt /particle.fact)
                 particle.stuck = 0
             else:
                 particle.stuck += 1
