@@ -329,35 +329,43 @@ def points_inside(polygon, data, t):
     #
     return depth_inside, longitudes, latitudes, status_inside, amount
 #
-def polygon_definition(filename):
-    # Function updated to get the info of the last day for each month
+def polygon_definition(filename, time_step='month'):
+    # Load the data
     data = input_file(filename)
-
     time_values = pd.to_datetime(data.time[0, :])
     
     df_time = pd.DataFrame({'time': time_values})
-    df_time['month'] = df_time['time'].dt.to_period('M')
-    last_of_month_indices = df_time.groupby('month').tail(1).index
+    
+    if time_step == 'month':
+        df_time['period'] = df_time['time'].dt.to_period('M')
+    elif time_step == 'week':
+        df_time['period'] = df_time['time'].dt.to_period('W')
+    elif time_step == 'day':
+        df_time['period'] = df_time['time'].dt.to_period('D')
+    else:
+        raise ValueError("time_step must be 'day', 'week', or 'month'")
+    
+    last_of_period_indices = df_time.groupby('period').tail(1).index
 
     outputs = ['depth', 'lon', 'lat', 'status', 'n_particles']
-    n_steps = len(last_of_month_indices)
+    n_steps = len(last_of_period_indices)
 
     polygons_dict = {
-        'N1': (polygon_coors_N1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'N2': (polygon_coors_N2, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'N3': (polygon_coors_N3, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'C1': (polygon_coors_C1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'S1': (polygon_coors_S1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'SP': (polygon_coors_SP, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'S2': (polygon_coors_S2, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'H1': (polygon_coors_H1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'J1': (polygon_coors_J1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'F1': (polygon_coors_F1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object)),
-        'HW1': (polygon_coors_HW1, pd.DataFrame(columns=outputs, index=np.arange(0, n_steps), dtype=object))
+        'N1': (polygon_coors_N1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'N2': (polygon_coors_N2, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'N3': (polygon_coors_N3, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'C1': (polygon_coors_C1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'S1': (polygon_coors_S1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'SP': (polygon_coors_SP, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'S2': (polygon_coors_S2, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'H1': (polygon_coors_H1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'J1': (polygon_coors_J1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'F1': (polygon_coors_F1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'HW1': (polygon_coors_HW1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object))
     }
 
-    # Loop through only the end-of-month steps
-    for step_index, i in enumerate(last_of_month_indices):
+    # Loop through only the selected time steps
+    for step_index, i in enumerate(last_of_period_indices):
         for key, (polygon, data_sets) in polygons_dict.items():
             depth_region, lon_region, lat_region, status_region, n_part = points_inside(polygon, data, t=i)
             data_sets.iloc[step_index] = [depth_region, lon_region, lat_region, status_region, n_part]
