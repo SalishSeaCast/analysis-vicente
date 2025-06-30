@@ -4,6 +4,7 @@ import importlib
 import numpy as np
 import os
 import sys
+import xarray as xr
 
 from parcels import Field, FieldSet, ParticleSet,Variable, JITParticle
 
@@ -25,17 +26,17 @@ def timings(year, month, day, sim_length, number_outputs):
     number_particles = int(min(sim_length, month_days) * 86400 / release_particles_every)
     print (number_particles)
 
-    output_interval = datetime.timedelta(seconds=sim_length * 86400 / number_outputs)
-#    output_interval = datetime.timedelta(seconds=120)
+#    output_interval = datetime.timedelta(seconds=sim_length * 86400 / number_outputs)
+    output_interval = datetime.timedelta(seconds=5)
     print ('output_interval', output_interval)
-    
+
     return (start_time, data_length, duration, delta_t, release_particles_every, number_particles, output_interval)
 
 
 def name_outfile(year, month, day, sim_length):
     path = '/home/sallen/MEOPAR/ANALYSIS/analysis-vicente/Ocean_Parcels/SHARED/'
     print (year, month, sim_length)
-    fn = f'Full_Marine_Sink_for_{day}-{month}-{year}_run_{sim_length}_days.zarr'
+    fn = f'Everystep4_for_{day}-{month}-{year}_run_{sim_length}_days.zarr'
     return os.path.join(path, fn)
 
 
@@ -55,11 +56,13 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     varlist = ['U', 'V', 'W']
     filenames, variables = OP.filename_set(start_time, data_length, varlist)
     dimensions = {'lon': 'glamf', 'lat': 'gphif', 'depth': 'depthw','time': 'time_counter'}
-    field_set = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=True, chunksize='auto')
+    field_set = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=True, chunksize='auto',
+                                  )
     
     # Vertical Variables and Depth Related
-    varlist=['Kz', 'totdepth', 'e3t', 'ssh']
+    varlist=['Kz', 'totdepth', 'e3t', 'ssh', 'tmask', 'umask', 'vmask', 'fmask']
     filenames, variables = OP.filename_set(start_time, data_length, varlist)
+    
     # 2-D, no time
     dimensions = {'lon': 'glamt', 'lat': 'gphit'}
     TD = Field.from_netcdf(filenames['totdepth'], variables['totdepth'], dimensions, allow_time_extrapolation=True, chunksize='auto')
@@ -76,11 +79,27 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     dimensions = {'lon': 'glamt', 'lat': 'gphit', 'depth': 'deptht','time': 'time_counter'}
     e3t = Field.from_netcdf(filenames['e3t'], variables['e3t'], dimensions, allow_time_extrapolation=True, chunksize='auto')
     field_set.add_field(e3t)
+
+    dimensions = {'lon': 'glamt', 'lat': 'gphit', 'depth': 'deptht','time': 't'}
+    tmask = Field.from_netcdf(filenames['tmask'], variables['tmask'], dimensions, chunksize='auto')
+    field_set.add_field(tmask)
+    
+    dimensions = {'lon': 'glamu', 'lat': 'gphiu', 'depth': 'deptht','time': 't'}
+    umask = Field.from_netcdf(filenames['umask'], variables['umask'], dimensions, chunksize='auto')
+    field_set.add_field(umask)
+    
+    dimensions = {'lon': 'glamv', 'lat': 'gphiv', 'depth': 'deptht','time': 't'}
+    vmask = Field.from_netcdf(filenames['vmask'], variables['vmask'], dimensions, chunksize='auto')
+    field_set.add_field(vmask)
+    
+    dimensions = {'lon': 'glamf', 'lat': 'gphif', 'depth': 'deptht','time': 't'}
+    fmask = Field.from_netcdf(filenames['fmask'], variables['fmask'], dimensions, chunksize='auto')
+    field_set.add_field(fmask)
     
     dt_h = 1 / 3600. 
     field_set.add_constant('sinkvel_sewage', 500/86400.) # m/hr * dt --> to seconds --> ~ 200 m/d (was 500)
     field_set.add_constant('sinkvel_marine', 250/86400.) # m/hr * dt --> to seconds --> ~ 200 m/d (was 250)
-    
+
     abso = 0.038 / 86400 # Colloidal/Dissolved → Attached to Marine Particle /s  (1/36 days)
     deso_s = 1.6 / 86400 # Sewage Particle → Colloidal/Dissolved /s
     deso_m = 1.6 / 86400 # Marine Particle → Colloidal/Dissolved /s (1/15 hours)
@@ -108,7 +127,7 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     cdmin, cdmax = 0.0075, 2                          # from SalishSeaCast
     field_set.add_constant('lowere3t_o2', zo * np.exp(kappa / np.sqrt(cdmax)))
     field_set.add_constant('uppere3t_o2', zo * np.exp(kappa / np.sqrt(cdmin)))
-    
+
     tau_crit = 0.01
     tau_bury_crit = 0.8
     field_set.add_constant('tau_constant', tau_crit / ((kappa ** 2) * rho))
@@ -123,8 +142,8 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
 
     return field_set, constants
 
-    
-def PBDEs_OP_run(year, month, day, sim_length, number_outputs):
+
+def PBDEs_OP_run(year, month, day, sim_length, number_outputs, newstart=True, input_file=None):
 
     # Set-up Run
     (start_time, data_length, duration, delta_t, 
@@ -138,13 +157,36 @@ def PBDEs_OP_run(year, month, day, sim_length, number_outputs):
     class MPParticle(JITParticle):
         status = Variable('status', initial=(np.random.rand(number_particles) >
                                              constants['fraction_colloidal']).astype(int) - 2)
+        prestatus = Variable('prestatus', initial=0)
         vvl_factor = Variable('fact', initial=1)
+        tmask = Variable('tmask', initial=1)
+        umask = Variable('umask', initial=1)
+        vmask = Variable('vmask', initial=1)
+        fmask = Variable('fmask', initial=1)
+        stuck = Variable('stuck', initial=0)
+        uvalue = Variable('uvalue', initial=0)
+        vvalue = Variable('vvalue', initial=0)
+        wvalue = Variable('wvalue', initial=0)
+        steps = Variable('steps', initial=0)
+        e3t = Variable('e3t', initial=0)
+        totaldepth = Variable('totaldepth', initial=0)
         release_time = Variable('release_time', 
                         initial=np.arange(0, release_particles_every*number_particles, release_particles_every))
-    
-    pset_states = ParticleSet(field_set, pclass=MPParticle, lon=constants['Iona_clon']*np.ones(number_particles), 
+    class MPParticle_R(JITParticle):
+        release_time = Variable('release_time')
+        status = Variable('status')
+        fact = Variable('fact')
+
+    print (newstart)
+    if newstart:
+        pset_states = ParticleSet(field_set, pclass=MPParticle, lon=constants['Iona_clon']*np.ones(number_particles), 
                           depth=constants['Iona_z']*np.ones(number_particles), 
                               lat = constants['Iona_clat']*np.ones(number_particles))
+    else:
+        input_file = input_file
+        print (input_file)
+        print (xr.open_dataset(input_file))
+        pset_states = ParticleSet.from_particlefile(field_set, pclass=MPParticle_R, filename=input_file)
 
     output_file = pset_states.ParticleFile(name=outfile_states, outputdt=output_interval)
     
@@ -167,8 +209,14 @@ if __name__ == "__main__":
     day = int(sys.argv[3]) # Interger between 1 and 31
     sim_length = int(sys.argv[4]) 
     number_outputs = int(sys.argv[5])
-    
-    PBDEs_OP_run(year, month, day, sim_length, number_outputs)
+    if sys.argv[6] == 'True':
+        newstart = True
+        input_file = None
+    else:
+        newstart = False
+        input_file = sys.argv[7]
+
+    PBDEs_OP_run(year, month, day, sim_length, number_outputs, newstart, input_file)
     #
     ## How to run in the terminal:
     # python -m Susans_Model_Driver start_year start_month start_day length_sim_in_days number_outputs

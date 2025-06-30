@@ -6,6 +6,10 @@
 def PBDEs_states(particle, fieldset, time):  
 
     particle.steps = 0
+    if particle.status == particle.prestatus:
+        particle.prestatus = particle.status + 0.10
+    else:
+        particle.prestatus = particle.status
     
     if (time > particle.release_time):
         if particle.status < 0:
@@ -53,7 +57,7 @@ def Sinking(particle, fieldset, time):
         particle.steps += 1
     #Sewage Particles sink fast        
     elif particle.status == 3:
-        particle_ddepth += fieldset.sinkvel_marine * particle.dt 
+        particle_ddepth += fieldset.sinkvel_marine * particle.dt
 
     # do settling here
     if particle.status == 1 or particle.status == 3:
@@ -170,8 +174,8 @@ def resuspension(particle, fieldset, time):
         
         tdr = fieldset.totaldepth[time, particle.depth, 
                         particle.lat, particle.lon]                 # even if new, already moved
-        ssh = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
-        particle.fact = (1 + ssh / tdr)
+        sshr = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
+        particle.fact = (1 + sshr / tdr)
         e3t_val_o2 = fieldset.e3t[time, tdr, particle.lat, particle.lon] * 0.5
         particle.e3t = e3t_val_o2
         bat_particle = max(tdr - e3t_val_o2, 0.5 / particle.fact) 
