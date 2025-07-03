@@ -329,6 +329,7 @@ def points_inside(polygon, data, t):
     #
     return depth_inside, longitudes, latitudes, status_inside, amount
 #
+#
 def polygon_definition(filename, time_step='month'):
     # Load the data
     data = input_file(filename)
@@ -347,7 +348,7 @@ def polygon_definition(filename, time_step='month'):
     
     last_of_period_indices = df_time.groupby('period').tail(1).index
 
-    outputs = ['depth', 'lon', 'lat', 'status', 'n_particles']
+    outputs = ['depth', 'lon', 'lat', 'status', 'n_particles', 'month']
     n_steps = len(last_of_period_indices)
 
     polygons_dict = {
@@ -364,13 +365,19 @@ def polygon_definition(filename, time_step='month'):
         'HW1': (polygon_coors_HW1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object))
     }
 
-    # Loop through only the selected time steps
     for step_index, i in enumerate(last_of_period_indices):
+        current_month = time_values[i].month  # numeric month (1–12)
+    
         for key, (polygon, data_sets) in polygons_dict.items():
             depth_region, lon_region, lat_region, status_region, n_part = points_inside(polygon, data, t=i)
-            data_sets.iloc[step_index] = [depth_region, lon_region, lat_region, status_region, n_part]
+    
+            months_region = [current_month] * len(depth_region)  # one month per particle
+            data_sets.iloc[step_index] = [
+                depth_region, lon_region, lat_region, status_region, n_part, months_region
+            ]
 
     return polygons_dict
+
 
 #
 def vertical_mean_total_profiles(polygon_section, v_resolution):
@@ -455,15 +462,54 @@ nav_lat = mask['nav_lat'].values
 tmask = mask['tmask'][0, 0].values
 #
 #
+#def vertical_status_profiles(polygon_section, v_resolution):
+#
+#    PROF = np.linspace(0, int(mask['totaldepth'].max().values), v_resolution)
+#
+#    status_list = [1, 2, 3, 11, 12, 13]
+#
+#    # Initialize the result DataFrame
+#    DATA_depth_mean = pd.DataFrame(
+#        columns=['Avg. Depth'] + [f'Particles Status {s}' for s in status_list],
+#        index=range(len(PROF) - 1)
+#    )
+#    DATA_depth_mean[:] = np.nan
+#
+#    # Loop through depth bins
+#    for k in range(len(PROF) - 1):
+#        bin_depths = {s: [] for s in status_list}
+#        particles_per_status = {s: 0 for s in status_list}
+#
+#        for i in range(len(polygon_section[1])):
+#            particle = polygon_section[1].iloc[i]
+#            statuses = particle.status
+#            depths = particle.depth
+#
+#            if isinstance(statuses, (np.ndarray, list)) and isinstance(depths, (np.ndarray, list)) and len(statuses) == len(depths):
+#                for status, depth in zip(statuses, depths):
+#                    if status in status_list and PROF[k] <= depth < PROF[k + 1]:
+#                        bin_depths[status].append(depth)
+#                        particles_per_status[status] += 1
+#
+#        #
+#        valid_depths = [np.nanmean(dlist) for dlist in bin_depths.values() if dlist]
+#        avg_depth = np.nanmean(valid_depths) if valid_depths else np.nan
+#        DATA_depth_mean.at[k, 'Avg. Depth'] = avg_depth
+#
+#        for status in status_list:
+#            DATA_depth_mean.at[k, f'Particles Status {status}'] = particles_per_status[status]
+#
+#    return DATA_depth_mean
+
+from collections import Counter
+
 def vertical_status_profiles(polygon_section, v_resolution):
-
     PROF = np.linspace(0, int(mask['totaldepth'].max().values), v_resolution)
+    status_list = [1, 2, 3, 11, 12, 13]
 
-    status_list = [1, 2, 3, 11, 12, 13, 21, 22, 23]
-
-    # Initialize the result DataFrame
+    # Add 'Mode Month' column
     DATA_depth_mean = pd.DataFrame(
-        columns=['Avg. Depth'] + [f'Particles Status {s}' for s in status_list],
+        columns=['Avg. Depth', 'Mode Month'] + [f'Particles Status {s}' for s in status_list],
         index=range(len(PROF) - 1)
     )
     DATA_depth_mean[:] = np.nan
@@ -472,28 +518,45 @@ def vertical_status_profiles(polygon_section, v_resolution):
     for k in range(len(PROF) - 1):
         bin_depths = {s: [] for s in status_list}
         particles_per_status = {s: 0 for s in status_list}
+        months_in_bin = []
 
         for i in range(len(polygon_section[1])):
             particle = polygon_section[1].iloc[i]
             statuses = particle.status
             depths = particle.depth
+            months = particle.month  # This is now a list of integers
 
-            if isinstance(statuses, (np.ndarray, list)) and isinstance(depths, (np.ndarray, list)) and len(statuses) == len(depths):
-                for status, depth in zip(statuses, depths):
+            if (isinstance(statuses, (np.ndarray, list)) and 
+                isinstance(depths, (np.ndarray, list)) and 
+                isinstance(months, (np.ndarray, list)) and 
+                len(statuses) == len(depths) == len(months)):
+
+                for status, depth, month in zip(statuses, depths, months):
                     if status in status_list and PROF[k] <= depth < PROF[k + 1]:
                         bin_depths[status].append(depth)
                         particles_per_status[status] += 1
+                        months_in_bin.append(month)
 
-        #
+        # Compute mean of valid depths
         valid_depths = [np.nanmean(dlist) for dlist in bin_depths.values() if dlist]
         avg_depth = np.nanmean(valid_depths) if valid_depths else np.nan
         DATA_depth_mean.at[k, 'Avg. Depth'] = avg_depth
 
+        # Compute mode month if available
+        if months_in_bin:
+            month_mode = Counter(months_in_bin).most_common(1)[0][0]
+        else:
+            month_mode = np.nan
+        DATA_depth_mean.at[k, 'Mode Month'] = month_mode
+
+        # Fill particle counts per status
         for status in status_list:
             DATA_depth_mean.at[k, f'Particles Status {status}'] = particles_per_status[status]
 
     return DATA_depth_mean
-     
+
+
+
 #
 def plot_vertical_total_profiles(array_vertical_profiles, data):
     #
