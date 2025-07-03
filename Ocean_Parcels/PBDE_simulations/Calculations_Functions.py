@@ -71,11 +71,16 @@ def metrics_table(filename, title = 'Simulation Metrics'):
     polygon_dict = Regions_functions_V2.polygon_definition(filename)
     status_vertical_N1 = Regions_functions_V2.vertical_status_profiles(polygon_dict['N1'], 80)
     status_vertical_S1 = Regions_functions_V2.vertical_status_profiles(polygon_dict['S1'], 80)
+    status_vertical_H1 = Regions_functions_V2.vertical_status_profiles(polygon_dict['H1'], 80)
     ### Ratio N1-S1 ###
     # JUST COLLOIDAL
     sum_water_N1 = status_vertical_N1['Particles Status 2'].sum() #+ status_vertical_N1['Particles Status 3'].sum()
     sum_water_S1 = status_vertical_S1['Particles Status 2'].sum() #+ status_vertical_S1['Particles Status 3'].sum()
     ratio_N1_S1 = sum_water_N1 / sum_water_S1
+    ### Ratio H1-S1 ###
+    # JUST COLLOIDAL
+    sum_water_H1 = status_vertical_H1['Particles Status 2'].sum() #+ status_vertical_H1['Particles Status 3'].sum()
+    ratio_H1_S1 = sum_water_H1 / sum_water_S1    
     ###############################################################################
     ### Proportions INFO ###
     #
@@ -101,13 +106,13 @@ def metrics_table(filename, title = 'Simulation Metrics'):
     ####
     #### METRICS TABLE ####
     #plt.rcParams.update({'font.size': 30})
-    column_labels = ['Simulation Label','M/C Water Column', 'M/C Sediment', 'N1/S1 Colloidal Water Column', 'Status 7 (Out JdF)', 'Out Mixing Region',
-                'Total Colloidal Water Column', 'Mean Depth Water Column', 'Mean Depth Sediment']
+    column_labels = ['Simulation Label','M/C Water Column', 'M/C Sediment', 'N1/S1 Colloidal Water Column', 'H1/S1 Colloidal Water Column', 'Status 7 (Out JdF)', 'Out Mixing Region', 'Total Colloidal Water Column', 'Mean Depth Water Column', 'Mean Depth Sediment']
     #
     metrics = [title,
         f"{ratio_MC_Water:.5f}",
         f"{ratio_MC_Sediment:.5f}",
         f"{ratio_N1_S1:.5f}",
+        f"{ratio_H1_S1:.5f}",       
         f"{proportions['Out JdF'].values[-1]:.5f} %",
         f"{proportions['Out Haro Mix'].values[-1]:.5f} %",
         f"{proportions['Colloidal Water'].values[-1]:.5f} %",
@@ -133,7 +138,7 @@ def metrics_table(filename, title = 'Simulation Metrics'):
             cell.get_text().set_weight('bold')
     
     #
-    table.scale(1.2, 2.5)
+    table.scale(1.5, 3)
     plt.tight_layout()
     plt.show()
 

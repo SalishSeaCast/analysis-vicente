@@ -113,7 +113,7 @@ def turb_mix(particle,fieldset,time):
     if particle.status == 1 or particle.status == 2 or particle.status == 3:
         """Vertical mixing"""
         #Vertical mixing
-        if particle.depth + 0.5 / particle.fact > td: #Only calculate gradient of diffusion for particles deeper than 0.5 otherwise OP will check for particles outside the domain and remove it.
+        if particle.depth + 0.5 / particle.fact > td: #Only calculate gradient of diffusion for particles deeper than 0.5 otherwise OP will check for particles         outside the domain and remove it.
             Kzdz = 2 * (fieldset.vert_eddy_diff[time, particle.depth, particle.lat, particle.lon] 
                         - fieldset.vert_eddy_diff[time, particle.depth-0.5/particle.fact, particle.lat, particle.lon]) #backwards difference 
         else: 
@@ -136,7 +136,7 @@ def turb_mix(particle,fieldset,time):
         if dzs + particle_ddepth + particle.depth > tdn:
             particle.depth = tdn #2 * tdn - (2* particle.depth + particle_ddepth + dzs)
             particle_ddepth = 0
-            # add status for sedimented (11, 12 or 13) !!
+            particle.status += 10 # add status for sedimented (11, 12 or 13) !!
         #
         elif dzs + particle.depth + particle_ddepth < 0:
             particle_ddepth = -(dzs + 2 * particle.depth + particle_ddepth) #reflection on surface
