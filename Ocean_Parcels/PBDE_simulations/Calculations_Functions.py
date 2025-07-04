@@ -141,6 +141,21 @@ def metrics_table(filename, title = 'Simulation Metrics'):
     table.scale(1.5, 3)
     plt.tight_layout()
     plt.show()
+    #
+    df = pd.DataFrame([{
+        'Simulation Label': title,
+        'M/C Water Column': ratio_MC_Water,
+        'M/C Sediment': ratio_MC_Sediment,
+        'N1/S1 Colloidal Water Column': ratio_N1_S1,
+        'H1/S1 Colloidal Water Column': ratio_H1_S1,
+        'Status 7 (Out JdF) [%]': proportions['Out JdF'].values[-1],
+        'Out Mixing Region [%]': proportions['Out Haro Mix'].values[-1],
+        'Total Colloidal Water Column [%]': proportions['Colloidal Water'].values[-1],
+        'Mean Depth Water Column [m]': depth_mean_water,
+        'Mean Depth Sediment [m]': depth_mean_sediment
+    }])    
+    return df
+    
 
 
 

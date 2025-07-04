@@ -1,7 +1,6 @@
 #
 ### Ocean Parcels Kernels for PBDEs Simulations ###    
 #
-# Force kernels to not move particles when not released!! <---- Not to move or change state
 #
 def PBDEs_states(particle, fieldset, time):    
         
@@ -65,7 +64,6 @@ def Sinking(particle, fieldset, time):
 #
 #### ADVECTION ####
 def Advection(particle, fieldset, time):
-    #print('Advection kernel is running') 
     # Advection for all PBDEs in status 1, 2 and 3
     if particle.status == 1 or particle.status == 2 or particle.status == 3: 
         ssh = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
@@ -136,7 +134,7 @@ def turb_mix(particle,fieldset,time):
         if dzs + particle_ddepth + particle.depth > tdn:
             particle.depth = tdn #2 * tdn - (2* particle.depth + particle_ddepth + dzs)
             particle_ddepth = 0
-            particle.status += 10 # add status for sedimented (11, 12 or 13) !!
+            particle.status += 10 # add status for sedimented (11, 12 or 13) !! 
         #
         elif dzs + particle.depth + particle_ddepth < 0:
             particle_ddepth = -(dzs + 2 * particle.depth + particle_ddepth) #reflection on surface
