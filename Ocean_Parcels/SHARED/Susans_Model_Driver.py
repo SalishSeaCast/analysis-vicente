@@ -26,8 +26,8 @@ def timings(year, month, day, sim_length, number_outputs):
     number_particles = int(min(sim_length, month_days) * 86400 / release_particles_every)
     print (number_particles)
 
-#    output_interval = datetime.timedelta(seconds=sim_length * 86400 / number_outputs)
-    output_interval = datetime.timedelta(seconds=5)
+    output_interval = datetime.timedelta(seconds=sim_length * 86400 / number_outputs)
+#    output_interval = datetime.timedelta(seconds=5)
     print ('output_interval', output_interval)
 
     return (start_time, data_length, duration, delta_t, release_particles_every, number_particles, output_interval)
@@ -36,7 +36,7 @@ def timings(year, month, day, sim_length, number_outputs):
 def name_outfile(year, month, day, sim_length):
     path = '/home/sallen/MEOPAR/ANALYSIS/analysis-vicente/Ocean_Parcels/SHARED/'
     print (year, month, sim_length)
-    fn = f'Everystep4_for_{day}-{month}-{year}_run_{sim_length}_days.zarr'
+    fn = f'NewRunInfoCorBot_for_{day}-{month}-{year}_run_{sim_length}_days.zarr'
     return os.path.join(path, fn)
 
 
@@ -97,13 +97,13 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     field_set.add_field(fmask)
     
     dt_h = 1 / 3600. 
-    field_set.add_constant('sinkvel_sewage', 500/86400.) # m/hr * dt --> to seconds --> ~ 200 m/d (was 500)
-    field_set.add_constant('sinkvel_marine', 250/86400.) # m/hr * dt --> to seconds --> ~ 200 m/d (was 250)
+    field_set.add_constant('sinkvel_sewage', 500/86400.) # m/hr * dt --> to seconds --> ~ 500 m/d 
+    field_set.add_constant('sinkvel_marine', 250/86400.) # m/hr * dt --> to seconds --> ~ 250 m/d 
 
-    abso = 0.038 / 86400 # Colloidal/Dissolved → Attached to Marine Particle /s  (1/36 days)
+    abso = 0.1 / 86400 # Colloidal/Dissolved → Attached to Marine Particle /s  (1/10 days)
     deso_s = 1.6 / 86400 # Sewage Particle → Colloidal/Dissolved /s
-    deso_m = 1.6 / 86400 # Marine Particle → Colloidal/Dissolved /s (1/15 hours)
-    deso_sed = deso_m # same as watercolumn (fast cycling)
+    deso_m = abso / 0.2 # Marine Particle → Colloidal/Dissolved /s ( 1 day)
+    deso_sed = 1 / (7. * 86400) # slower than watercolumn (7 days)
     abso_sed = deso_sed * 30. / 70 # in the sediments, easier to find marine particles to bind to, 30/70 is ratio of suspended materials (1/14.6 days)
     sediment_burying = 1. / (10000 * 365 * 86400) # Particles get buried by sediment
     field_set.add_constant('abso_probability', 1 - np.exp(-abso * delta_t))
@@ -128,7 +128,7 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     field_set.add_constant('lowere3t_o2', zo * np.exp(kappa / np.sqrt(cdmax)))
     field_set.add_constant('uppere3t_o2', zo * np.exp(kappa / np.sqrt(cdmin)))
 
-    tau_crit = 0.01
+    tau_crit = 0.005 # halved
     tau_bury_crit = 0.8
     field_set.add_constant('tau_constant', tau_crit / ((kappa ** 2) * rho))
     field_set.add_constant('tau_constant_lower', tau_crit / (rho * cdmax))
@@ -140,6 +140,11 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     print (field_set.tau_constant, field_set.tau_bury_constant)
     print (field_set.tau_constant_lower, field_set.tau_constant_upper)
 
+    field_set.add_constant('dx_lat', 0.00189/2)
+    field_set.add_constant('dx_lon', 0.00519/2)
+    field_set.add_constant('dy_lat', 0.00393/2)
+    field_set.add_constant('dy_lon', -0.00334/2)
+    
     return field_set, constants
 
 
@@ -157,17 +162,18 @@ def PBDEs_OP_run(year, month, day, sim_length, number_outputs, newstart=True, in
     class MPParticle(JITParticle):
         status = Variable('status', initial=(np.random.rand(number_particles) >
                                              constants['fraction_colloidal']).astype(int) - 2)
-        prestatus = Variable('prestatus', initial=0)
         vvl_factor = Variable('fact', initial=1)
         tmask = Variable('tmask', initial=1)
         umask = Variable('umask', initial=1)
         vmask = Variable('vmask', initial=1)
         fmask = Variable('fmask', initial=1)
         stuck = Variable('stuck', initial=0)
+        H_vel_2 = Variable('H_vel_2', initial=0)
+        crit = Variable('crit', initial=0)
+        bat_particle = Variable('bat_particle', initial=0)
         uvalue = Variable('uvalue', initial=0)
         vvalue = Variable('vvalue', initial=0)
         wvalue = Variable('wvalue', initial=0)
-        steps = Variable('steps', initial=0)
         e3t = Variable('e3t', initial=0)
         totaldepth = Variable('totaldepth', initial=0)
         release_time = Variable('release_time', 
