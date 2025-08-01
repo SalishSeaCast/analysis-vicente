@@ -381,7 +381,8 @@ def polygon_definition(filename, time_step='month'):
 
 #
 def vertical_mean_total_profiles(polygon_section, v_resolution):
-    PROF = np.linspace(0, int(mask['totaldepth'].max().values), v_resolution)
+    e3t = xr.open_dataset('/results2/SalishSea/nowcast-green.202111/06aug15/SalishSea_1h_20150806_20150806_grid_T.nc')
+    PROF = np.linspace(0, int(e3t.deptht.max().values), v_resolution)
 
     # DataFrames to store average and total profiles
     DATA_depth_mean = pd.DataFrame(columns=['Avg. Depth', 'Avg. Particles'])
@@ -453,7 +454,42 @@ def vertical_mean_total_profiles(polygon_section, v_resolution):
     DATA_depth_total.at[k, 'Total Particles'] = total_particles_in_bin
 
     return DATA_depth_mean, DATA_depth_total
+################### DEPTHS NEW (more efficient) #############
+def binned_particle_counts_by_depth(polygon_section, depth_bin_edges):
+    # Prepare output DataFrame
+    avg_depths = 0.5 * (depth_bin_edges[:-1] + depth_bin_edges[1:])
+    particle_counts = np.zeros(len(avg_depths), dtype=int)
 
+    # Loop through each row of polygon data
+    for row in polygon_section[1].itertuples():
+        if len(row.depth) == 0:
+            continue
+
+        depths = np.array(row.depth)
+        statuses = np.array(row.status)
+
+        valid_mask = statuses > 0
+        depths = depths[valid_mask]
+
+        if len(depths) == 0:
+            continue
+
+        # Count particles in each bin
+        bin_indices = np.digitize(depths, depth_bin_edges) - 1
+
+        # Add to total particle count per bin
+        for idx in bin_indices:
+            if 0 <= idx < len(particle_counts):
+                particle_counts[idx] += 1
+
+    # Create result DataFrame
+    result_df = pd.DataFrame({
+        'Avg. Depth': avg_depths,
+        'Particle Count': particle_counts
+    })
+
+    return result_df
+####################
 clat = [49.195045]
 clon = [-123.301956]
 #
@@ -500,7 +536,69 @@ tmask = mask['tmask'][0, 0].values
 #            DATA_depth_mean.at[k, f'Particles Status {status}'] = particles_per_status[status]
 #
 #    return DATA_depth_mean
+######## Updated Status pProfiles ##########
+from collections import Counter
+def vertical_status_profiles_V2(polygon_section, depth_bin_edges):
 
+    """
+    Count particles by status per depth bin defined by depth_bin_edges,
+    and return DataFrame with fixed Avg. Depth (bin centers) and Mode Month.
+
+    Parameters:
+    - polygon_section: tuple with polygon coords and DataFrame containing particle data.
+    - depth_bin_edges: 1D array-like with depth bin edges (length = n_bins + 1)
+
+    Returns:
+    - DataFrame with columns ['Avg. Depth', 'Mode Month', 'Particles Status X', ...]
+      and length = number of bins (len(depth_bin_edges) - 1)
+    """
+    status_list = [1, 2, 3, 11, 12, 13]
+
+    # Compute bin centers (average depths)
+    avg_depths = 0.5 * (depth_bin_edges[:-1] + depth_bin_edges[1:])
+
+    # Prepare output DataFrame
+    DATA_depth_mean = pd.DataFrame(
+        columns=['Avg. Depth', 'Mode Month'] + [f'Particles Status {s}' for s in status_list],
+        index=range(len(avg_depths))
+    )
+    DATA_depth_mean[:] = np.nan
+    DATA_depth_mean['Avg. Depth'] = avg_depths
+
+    # Loop through each bin
+    for k in range(len(avg_depths)):
+        particles_per_status = {s: 0 for s in status_list}
+        months_in_bin = []
+
+        for i in range(len(polygon_section[1])):
+            particle = polygon_section[1].iloc[i]
+            statuses = particle.status
+            depths = particle.depth
+            months = particle.month  # List of integers
+
+            if (isinstance(statuses, (np.ndarray, list)) and
+                isinstance(depths, (np.ndarray, list)) and
+                isinstance(months, (np.ndarray, list)) and
+                len(statuses) == len(depths) == len(months)):
+
+                for status, depth, month in zip(statuses, depths, months):
+                    if status in status_list and depth_bin_edges[k] <= depth < depth_bin_edges[k + 1]:
+                        particles_per_status[status] += 1
+                        months_in_bin.append(month)
+
+        # Compute mode month if available
+        if months_in_bin:
+            month_mode = Counter(months_in_bin).most_common(1)[0][0]
+        else:
+            month_mode = np.nan
+        DATA_depth_mean.at[k, 'Mode Month'] = month_mode
+
+        # Fill particle counts per status
+        for status in status_list:
+            DATA_depth_mean.at[k, f'Particles Status {status}'] = particles_per_status[status]
+
+    return DATA_depth_mean
+########3
 from collections import Counter
 
 def vertical_status_profiles(polygon_section, v_resolution):
@@ -555,62 +653,7 @@ def vertical_status_profiles(polygon_section, v_resolution):
 
     return DATA_depth_mean
 
-
-
-#
-def plot_vertical_total_profiles(array_vertical_profiles, data):
-    #
-    cmap = ListedColormap(['grey', 'white'])
-    #
-    fig = plt.figure(figsize=(15, 18))
-    gs = fig.add_gridspec(5, 3, width_ratios=[1.0, 1.0, 0.8])
-    #
-    ax_plots = [fig.add_subplot(gs[i // 2, i % 2]) for i in range(9)]
-    #
-    ax_map = fig.add_subplot(gs[1:3, 2]) 
-    #
-    ax_plots[0].plot(array_vertical_profiles[0]['Total Particles'], array_vertical_profiles[0]['Avg. Depth'], '.-r', label='NSoG N1')
-    ax_plots[1].plot(array_vertical_profiles[1]['Total Particles'], array_vertical_profiles[1]['Avg. Depth'], '.-b', label='NSoG N2')
-    ax_plots[2].plot(array_vertical_profiles[2]['Total Particles'], array_vertical_profiles[2]['Avg. Depth'], '.-c', label='CSoG C1')
-    ax_plots[3].plot(array_vertical_profiles[3]['Total Particles'], array_vertical_profiles[3]['Avg. Depth'], '.-g', label='SSoG S1')
-    ax_plots[4].plot(array_vertical_profiles[4]['Total Particles'], array_vertical_profiles[4]['Avg. Depth'], 'tab:orange',linestyle='-', marker='.', label='SSoG S2')
-    ax_plots[5].plot(array_vertical_profiles[5]['Total Particles'], array_vertical_profiles[5]['Avg. Depth'], '.-y', label='Haro H1')
-    ax_plots[6].plot(array_vertical_profiles[6]['Total Particles'], array_vertical_profiles[6]['Avg. Depth'], '.-', color = 'm', label='JdF J1')
-    ax_plots[7].plot(array_vertical_profiles[7]['Total Particles'], array_vertical_profiles[7]['Avg. Depth'], '.-', color = 'tab:brown', label='Fraser F1')
-    ax_plots[8].plot(array_vertical_profiles[8]['Total Particles'], array_vertical_profiles[8]['Avg. Depth'], '.-', color = 'tab:gray', label='Howe Sound HW1')
-    
-    #
-    for ax in ax_plots:
-        ax.set_ylim(0, 430)
-        ax.invert_yaxis()
-        ax.legend(fontsize=10)
-        ax.set_xlabel("Total N of Particles")
-        ax.set_ylabel("Avg. Depth bins [m]")
-        ax.grid(linestyle = '--')
-    #
-    ax_map.pcolormesh(nav_lon, nav_lat, tmask, cmap=cmap, shading='auto')
-    ax_map.scatter(lon_NSoG_N1, lat_NSoG_N1, s=10, color='r', alpha=0.5, label='NSoG N1')
-    ax_map.scatter(lon_NSoG_N2, lat_NSoG_N2, s=10, color='b', alpha=0.5, label='NSoG N2')
-    ax_map.scatter(lon_CSoG_C1, lat_CSoG_C1, s=10, color='c', alpha=0.5, label='CSoG')
-    ax_map.scatter(lon_SSoG_S1, lat_SSoG_S1, s=10, color='g', alpha=0.5, label='SSoG S1')
-    ax_map.scatter(lon_SSoG_S2, lat_SSoG_S2, s=10, color='tab:orange', alpha=0.5, label='SSoG S2')
-    ax_map.scatter(lon_Haro_H1, lat_Haro_H1, s=10, color='y', alpha=0.5, label='Haro H1')
-    ax_map.scatter(lon_Juan_J1, lat_Juan_J1, s=10, color='m', alpha=0.5, label='JdF J1')
-    ax_map.scatter(lon_Fraser_F1, lat_Fraser_F1, s=10, color='tab:brown', alpha=0.5, label='Fraser F1')
-    ax_map.scatter(lon_Howe_HW1, lat_Howe_HW1, s=10, color='tab:gray', alpha=0.5, label='Howe Sound HW1')
-    ax_map.scatter(data.lon, data.lat, s=.2, color='k', alpha = .2)
-    ax_map.scatter(clon[0], clat[0], s=10, color='m', marker='s')
-    #
-    ax_map.set_xlim(-125.3, -122.2)
-    ax_map.set_ylim(47.5, 50.5)
-    ax_map.legend(fontsize=12)
-    ax_map.tick_params(
-        which='both', bottom=False, top=False, left=False, right=False,
-        labelbottom=False, labelleft=False,
-    )
-    #
-    fig.tight_layout()
-    plt.show()      
+      
 #
 
 def plot_vertical_status_profiles(status_label, status_profiles, states, colors, regions, data):
@@ -712,7 +755,7 @@ def plot_vertical_total_state_profiles(array_total_profiles, array_status_profil
         # Convert depth and particle count data
         y = df_total['Avg. Depth'].astype(float).to_numpy()
         y_status = df_status['Avg. Depth'].astype(float).to_numpy()
-        total = df_total['Total Particles'].astype(float).to_numpy()
+        total = df_total['Particle Count'].astype(float).to_numpy()
         water_col = (
             df_status['Particles Status 1'].astype(float) +
             df_status['Particles Status 2'].astype(float) +
@@ -751,23 +794,100 @@ def plot_vertical_total_state_profiles(array_total_profiles, array_status_profil
             labelbottom=False, labelleft=False,
         )
 
-        # Add depth info text box
-        #mean_water_depth = np.nanmean(water_regions_depth[i])
-        #mean_sediment_depth = np.nanmean(sedimented_Regions_depth[i])
-        #mean_total_depth = np.nanmean(np.concatenate([water_regions_depth[i], sedimented_Regions_depth[i]]))
+    fig.tight_layout()
+    plt.show()
+#
+# NOW WITH VOLUMES TO GET CONCENTRATIONS!! :D
+# 
+def plot_vertical_concentration_state_profiles(array_total_profiles, array_status_profiles,
+                                       water_regions_lon, water_regions_lat,
+                                       sedimented_regions_lon, sedimented_regions_lat,
+                                       volume_profiles):
+    plt.rcParams.update({'font.size': 12})
+    cmap = ListedColormap(['grey', 'white'])
 
-        #depth_text = (
-        #    f"Mean Depth Total: {mean_total_depth:.1f} m\n"
-        #    f"Mean Depth Water: {mean_water_depth:.1f} m\n"
-        #    f"Mean Depth Sediment: {mean_sediment_depth:.1f} m"
-        #)
+    site_names = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP',
+                  'HW1', 'F1', 'S2', 'H1', 'J1']
 
-        #ax_map.text(0.5, 0.02, depth_text, fontsize=9, color='k',
-        #            ha='center', va='bottom', transform=ax_map.transAxes,
-        #            bbox=dict(boxstyle="round,pad=0.3", facecolor='white', edgecolor='gray', alpha=0.8))
+    site_coords = [
+        (lon_NSoG_N1, lat_NSoG_N1),
+        (lon_NSoG_N2, lat_NSoG_N2),
+        (lon_NSoG_N3, lat_NSoG_N3),
+        (lon_CSoG_C1, lat_CSoG_C1),
+        (lon_SSoG_S1, lat_SSoG_S1),
+        (lon_SSoG_SP, lat_SSoG_SP),
+        (lon_Howe_HW1, lat_Howe_HW1),
+        (lon_Fraser_F1, lat_Fraser_F1),
+        (lon_SSoG_S2, lat_SSoG_S2),
+        (lon_Haro_H1, lat_Haro_H1),
+        (lon_Juan_J1, lat_Juan_J1),
+    ]
+
+    fig, axes = plt.subplots(nrows=len(array_total_profiles), ncols=2,
+                             figsize=(12, int(len(array_total_profiles)*5)),
+                             gridspec_kw={'width_ratios': [2, 1]})
+
+    for i in range(len(array_total_profiles)):
+        ax_plot = axes[i, 0]
+        ax_map = axes[i, 1]
+
+        df_total = array_total_profiles[i]
+        df_status = array_status_profiles[i]
+        volumes = volume_profiles[i]  # 1D array matching depth bins
+
+        # Get depth arrays
+        y = df_total['Avg. Depth'].astype(float).to_numpy()
+        y_status = df_status['Avg. Depth'].astype(float).to_numpy()
+
+        # Get particle counts
+        total = df_total['Particle Count'].astype(float).to_numpy()
+        water_col = (
+            df_status['Particles Status 1'].astype(float) +
+            df_status['Particles Status 2'].astype(float) +
+            df_status['Particles Status 3'].astype(float)
+        ).to_numpy()
+        sedimented = (
+            df_status['Particles Status 11'].astype(float) +
+            df_status['Particles Status 12'].astype(float) +
+            df_status['Particles Status 13'].astype(float)
+        ).to_numpy()
+
+        # === Convert to concentration (particles/m³) ===
+        with np.errstate(divide='ignore', invalid='ignore'):
+            total_conc = np.where(volumes > 0, total / volumes, np.nan)
+            water_conc = np.where(volumes > 0, water_col / volumes, np.nan)
+            sedimented_conc = np.where(volumes > 0, sedimented / volumes, np.nan)
+
+        # === Plot: vertical profile ===
+        ax_plot.fill_betweenx(y_status, water_conc, color='blue', alpha=0.6, label='Water Column')
+        ax_plot.fill_betweenx(y_status, sedimented_conc, color='red', alpha=0.6, label='Sedimented')
+        ax_plot.plot(total_conc, y, color='k', linewidth=2, label='Total')
+        ax_plot.set_ylim(0, 430)
+        ax_plot.invert_yaxis()
+        ax_plot.set_title(rf"$\bf{{{site_names[i]}}}$")
+        ax_plot.set_xlabel("Particle Concentration [particles/m³]")
+        ax_plot.set_ylabel("Avg. Depth [m]")
+        ax_plot.grid(True, linestyle='--')
+        ax_plot.legend(fontsize=8, loc='lower right')
+
+        # === Map ===
+        ax_map.pcolormesh(nav_lon, nav_lat, tmask, cmap=cmap, shading='auto')
+        ax_map.scatter(*site_coords[i], s=15, alpha=0.03, color='k', label=site_names[i])
+        ax_map.scatter(water_regions_lon[i], water_regions_lat[i], s=0.5, color='blue', alpha=0.5, label='Water')
+        ax_map.scatter(sedimented_regions_lon[i], sedimented_regions_lat[i], s=0.5, color='red', alpha=0.5, label='Sedimented')
+        ax_map.set_xlim(site_coords[i][0].mean() - 0.7, site_coords[i][0].mean() + 0.7)
+        ax_map.set_ylim(site_coords[i][1].mean() - 0.7, site_coords[i][1].mean() + 0.7)
+        ax_map.set_aspect('equal', adjustable='box')
+        ax_map.set_title(rf"$\bf{{{site_names[i]}}}$")
+
+        ax_map.tick_params(
+            which='both', bottom=False, top=False, left=False, right=False,
+            labelbottom=False, labelleft=False,
+        )
 
     fig.tight_layout()
     plt.show()
+    
 
 
 #
@@ -1038,3 +1158,86 @@ def volumes():
                        volume_region(polygon_H1), volume_region(polygon_J1)]
     regions_string = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP', 'HW1', 'F1', 'S2', 'H1', 'J1']
     return regions_volumes, regions_string
+#
+def volume_by_depth_all_regions(polygon_dict):
+    from shapely.geometry import Point
+    import xarray as xr
+    import numpy as np
+
+    # Load grid info only once
+    path = '/ocean/vvalenzuela/MOAD/grid2/mesh_mask202108_TDV.nc'
+    ds = xr.open_dataset(path)
+
+    volume = ds['volume']            # shape (z, y, x)
+    gdept = ds['gdept_0'][0]         # shape (z, y, x)
+    lon = ds['nav_lon'].values       # shape (y, x)
+    lat = ds['nav_lat'].values       # shape (y, x)
+    mask = ds['tmask'][0].values     # shape (z, y, x)
+
+    coords = volume.coords
+    dims = volume.dims
+    nz = volume.sizes['z']
+
+    volumes_dict = {}
+
+    for label, polygon_entry in polygon_dict.items():
+        polygon = polygon_entry[0]  # shapely Polygon
+
+        # === Create polygon mask in lon-lat space ===
+        polygon_mask_2d = np.array([
+            [polygon.contains(Point(lon[j, i].item(), lat[j, i].item())) for i in range(lon.shape[1])]
+            for j in range(lon.shape[0])
+        ])  # shape (y, x)
+
+        # Expand to 3D
+        polygon_mask_3d = np.repeat(polygon_mask_2d[np.newaxis, :, :], nz, axis=0)  # shape (z, y, x)
+
+        # Combine with tmask
+        combined_mask = (polygon_mask_3d & (mask == 1))  # bool array (z, y, x)
+
+        # Convert to xarray DataArray for masking
+        mask_da = xr.DataArray(combined_mask, dims=dims, coords=coords)
+
+        # Mask and compute volume per depth
+        masked_volume = volume.where(mask_da)
+        volume_by_depth = masked_volume.sum(dim=('y', 'x'))
+
+        # Also mask depth and compute mean depth per level
+        masked_depth = gdept.where(mask_da)
+        mean_depth = masked_depth.mean(dim=('y', 'x'))
+
+        # Assign actual depth values to result
+        volume_by_depth = volume_by_depth.assign_coords(depth=mean_depth)
+        volume_by_depth.name = 'volume'
+
+        volumes_dict[label] = volume_by_depth
+
+    return volumes_dict
+#
+def interpolate_volume_profile(volume_profile, number_of_depths):
+    import numpy as np
+    import xarray as xr
+
+    # Get the existing depth coordinate values (z-levels mapped to actual depth)
+    depth_vals = volume_profile['depth'].values
+    volume_vals = volume_profile.values
+
+    # Filter out NaNs
+    valid = ~np.isnan(depth_vals) & ~np.isnan(volume_vals)
+    depth_vals = depth_vals[valid]
+    volume_vals = volume_vals[valid]
+
+    # Define new depth bins (higher resolution)
+    new_depths = np.linspace(depth_vals.min(), depth_vals.max(), number_of_depths)
+
+    # Interpolate depths
+    interp_volume_vals = np.interp(new_depths, depth_vals, volume_vals)
+    #
+    interpolated_volume = xr.DataArray(
+        interp_volume_vals,
+        coords={'depth': new_depths},
+        dims='depth',
+        name='volume'
+    )
+
+    return interpolated_volume, new_depths

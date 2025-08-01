@@ -4,11 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 #
 def proportions_from_filename(filename):
-    import xarray as xr
-    import numpy as np
-    import pandas as pd
-
-    data = xr.open_dataset(filename)
+    #
+    data = xr.open_dataset(filename, engine = 'zarr')
     time_index = pd.to_datetime(data.time[0, :].values)
 
     # Categories based on status codes
@@ -66,7 +63,7 @@ def proportions_from_filename(filename):
 
 ###############################################################################
 ### REGIONS INFO ###
-def metrics_table(filename, title = 'Simulation Metrics'):
+def metrics_table(filename, title = 'Simulation Metrics', plot = True):
     import Regions_functions_V2
     polygon_dict = Regions_functions_V2.polygon_definition(filename)
     status_vertical_N1 = Regions_functions_V2.vertical_status_profiles(polygon_dict['N1'], 80)
@@ -96,7 +93,7 @@ def metrics_table(filename, title = 'Simulation Metrics'):
     #
     ### Simulation Info ###
     #
-    data = xr.open_dataset(filename)
+    data = xr.open_dataset(filename, engine='zarr')
     data_water = data.where((data.status > 0) & (data.status < 4))
     data_sediment = data.where(data.status > 10)
     #
@@ -104,55 +101,56 @@ def metrics_table(filename, title = 'Simulation Metrics'):
     depth_mean_sediment = data_sediment.z.mean().values
     ####
     ####
+    if plot == True:
     #### METRICS TABLE ####
     #plt.rcParams.update({'font.size': 30})
-    column_labels = ['Simulation Label','M/C Water Column', 'M/C Sediment', 'N1/S1 Colloidal Water Column', 'H1/S1 Colloidal Water Column', 'Status 7 (Out JdF)', 'Out Mixing Region', 'Total Colloidal Water Column', 'Mean Depth Water Column', 'Mean Depth Sediment']
-    #
-    metrics = [title,
-        f"{ratio_MC_Water:.5f}",
-        f"{ratio_MC_Sediment:.5f}",
-        f"{ratio_N1_S1:.5f}",
-        f"{ratio_H1_S1:.5f}",       
-        f"{proportions['Out JdF'].values[-1]:.5f} %",
-        f"{proportions['Out Haro Mix'].values[-1]:.5f} %",
-        f"{proportions['Colloidal Water'].values[-1]:.5f} %",
-        f"{depth_mean_water:.5f} m",
-        f"{depth_mean_sediment:.5f} m"
-    ]
-    #
-    fig, ax = plt.subplots(figsize=(16, 3))  
-    ax.axis("off")
-    #
-    #
-    table = ax.table(
-        cellText=[metrics],
-        colLabels=column_labels,
-        loc="center",
-        cellLoc="center"
-    )
-    #
-    for (row, col), cell in table.get_celld().items():
-        cell.set_height(0.3)
-        cell.get_text().set_fontsize(50)
-        if row == 0:
-            cell.get_text().set_weight('bold')
-    
-    #
-    table.scale(1.5, 3)
-    plt.tight_layout()
-    plt.show()
+        column_labels = ['Simulation Label','M/C W. C.', 'M/C S.', 'N1/S1 Colloidal W. C.', 'H1/S1 Colloidal W. C.', 'Out JdF', 'Out Mixing Region', 'Colloidal W. C.', 'Mean Depth W. C.', 'Mean Depth S.']
+        #
+        metrics = [title,
+            f"{ratio_MC_Water:.5f}",
+            f"{ratio_MC_Sediment:.5f}",
+            f"{ratio_N1_S1:.5f}",
+            f"{ratio_H1_S1:.5f}",       
+            f"{proportions['Out JdF'].values[-1]:.5f} %",
+            f"{proportions['Out Haro Mix'].values[-1]:.5f} %",
+            f"{proportions['Colloidal Water'].values[-1]:.5f} %",
+            f"{depth_mean_water:.5f} m",
+            f"{depth_mean_sediment:.5f} m"
+        ]
+        #
+        fig, ax = plt.subplots(figsize=(16, 3))  
+        ax.axis("off")
+        #
+        #
+        table = ax.table(
+            cellText=[metrics],
+            colLabels=column_labels,
+            loc="center",
+            cellLoc="center"
+        )
+        #
+        for (row, col), cell in table.get_celld().items():
+            cell.set_height(0.3)
+            cell.get_text().set_fontsize(50)
+            if row == 0:
+                cell.get_text().set_weight('bold')
+        
+        #
+        table.scale(1.5, 3)
+        plt.tight_layout()
+        plt.show()    
     #
     df = pd.DataFrame([{
         'Simulation Label': title,
-        'M/C Water Column': ratio_MC_Water,
-        'M/C Sediment': ratio_MC_Sediment,
-        'N1/S1 Colloidal Water Column': ratio_N1_S1,
-        'H1/S1 Colloidal Water Column': ratio_H1_S1,
-        'Status 7 (Out JdF) [%]': proportions['Out JdF'].values[-1],
-        'Out Mixing Region [%]': proportions['Out Haro Mix'].values[-1],
-        'Total Colloidal Water Column [%]': proportions['Colloidal Water'].values[-1],
-        'Mean Depth Water Column [m]': depth_mean_water,
-        'Mean Depth Sediment [m]': depth_mean_sediment
+        'M/C W. C.': ratio_MC_Water,
+        'M/C S.': ratio_MC_Sediment,
+        'N1/S1 Colloidal W. C.': ratio_N1_S1,
+        'H1/S1 Colloidal W. C.': ratio_H1_S1,
+        'Out JdF (%)': proportions['Out JdF'].values[-1],
+        'Out Mixing Region (%)': proportions['Out Haro Mix'].values[-1],
+        'Total Colloidal W. C. (%)': proportions['Colloidal Water'].values[-1],
+        'Mean Depth W. C. (m)': depth_mean_water,
+        'Mean Depth S. (m)': depth_mean_sediment
     }])    
     return df
     

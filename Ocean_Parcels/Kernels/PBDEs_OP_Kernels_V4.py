@@ -3,7 +3,10 @@
 #
 #
 def PBDEs_states(particle, fieldset, time):    
-        
+    particle.H_vel_2 = 0
+    particle.crit = 0
+    particle.bat_particle = 0
+    #    
     if (time > particle.release_time):
         if particle.status < 0:
             particle.status = - particle.status
@@ -55,10 +58,10 @@ def Sinking(particle, fieldset, time):
 
     # do settling here
     if particle.status == 1 or particle.status == 3:
-        td = fieldset.totaldepth[time, particle.depth, 
+        tda = fieldset.totaldepth[time, particle.depth, 
                         particle.lat, particle.lon]
-        if particle_ddepth + particle.depth > td:
-            particle.depth  = td # Get particles attached to the bottom when they reach it
+        if particle_ddepth + particle.depth > tda:
+            particle.depth  = tda # Get particles attached to the bottom when they reach it
             particle_ddepth = 0 # As I've put them on the bottom and that's where I want them.
             particle.status += 10 
 #
@@ -99,11 +102,6 @@ def Advection(particle, fieldset, time):
         #
         if particle_ddepth + particle.depth < 0:
             particle_ddepth = - (2 * particle.depth + particle_ddepth)
-#        tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
-#                        particle.lat+particle_dlat, particle.lon+particle_dlon]
-#        # advect into bottom: onto bottom
-#        if particle_ddepth + particle.depth > tdn:
-#            particle_ddepth = 2 * tdn - (2* particle.depth + particle_ddepth)
 #
 #
 #### TURBULENT MIX ####
@@ -129,12 +127,17 @@ def turb_mix(particle,fieldset,time):
         
         #Apply turbulent mixing.       
         # reflect if mixed into bottom
-        tdn = fieldset.totaldepth[time, particle.depth + particle_ddepth, 
+        
+        tdn = fieldset.totaldepth[time, particle.depth, 
                         particle.lat+particle_dlat, particle.lon+particle_dlon]
         if dzs + particle_ddepth + particle.depth > tdn:
-            particle.depth = tdn #2 * tdn - (2* particle.depth + particle_ddepth + dzs)
-            particle_ddepth = 0
-            particle.status += 10 # add status for sedimented (11, 12 or 13) !! 
+            particle.depth = tdn
+            particle_ddepth = 0  
+            particle.status += 10          
+            particle.lat = particle.lat + particle_dlat
+            particle_dlat = 0
+            particle.lon = particle.lon + particle_dlon
+            particle_dlon = 0
         #
         elif dzs + particle.depth + particle_ddepth < 0:
             particle_ddepth = -(dzs + 2 * particle.depth + particle_ddepth) #reflection on surface
@@ -158,32 +161,112 @@ def resuspension(particle, fieldset, time):
         vtau_constant_lower = fieldset.tau_constant_lower
         vtau_constant_upper = fieldset.tau_constant_upper
         #
-        tdn = fieldset.totaldepth[time, particle.depth, 
+        tdr = fieldset.totaldepth[time, particle.depth, 
                         particle.lat, particle.lon]
-        e3t_val_o2 = fieldset.e3t[time, tdn, particle.lat, particle.lon]
-        bat_particle = tdn - e3t_val_o2 
+        sshr = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
+        particle.fact = (1 + sshr / tdr)
+        e3t_val_o2 = fieldset.e3t[time, tdr, particle.lat, particle.lon] * 0.5
+        particle.e3t = e3t_val_o2
+        bat_particle = max(tdr - e3t_val_o2, 0.5) 
+        particle.bat_particle = bat_particle 
         #
         # horizontal velocities in m/s  
-        u_vel = fieldset.U[time, bat_particle, particle.lat, particle.lon] * fieldset.u_deg2mps
-        v_vel = fieldset.V[time, bat_particle, particle.lat, particle.lon] * fieldset.v_deg2mps
+        u_vel, v_vel = fieldset.UV[time, bat_particle, particle.lat, particle.lon]
+        u_vel = u_vel * fieldset.u_deg2mps
+        v_vel = v_vel * fieldset.v_deg2mps
+        #
         # squared horizontal velocity
-        H_vel_2 = u_vel**2 + v_vel**2  
         #
-        suspend_rate = 2 * fieldset.sinkvel_marine # particles move 2 times the sinking velocity of the marine particles
-        #
+        H_vel_2 = u_vel**2 + v_vel**2
+        particle.H_vel_2 = H_vel_2
+        suspend_rate = 2 * fieldset.sinkvel_marine # so they can actually resuspend
         if e3t_val_o2 < fieldset.lowere3t_o2:
+            particle.crit = vtau_constant_lower
             if vtau_constant_lower <= H_vel_2:
                 particle.status -= 10
-                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt)
+                particle.stuck = 0
+                particle.depth = tdr - min(e3t_val_o2, suspend_rate*particle.dt) / particle.fact 
+            else:
+                particle.stuck += 1
         elif e3t_val_o2 > fieldset.uppere3t_o2:
+            particle.crit = vtau_constant_upper
             if vtau_constant_upper <= H_vel_2:
                 particle.status -= 10
-                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt)
+                particle.depth = tdr - min(e3t_val_o2, suspend_rate*particle.dt) / particle.fact
+                particle.stuck = 0
+            else:
+                particle.stuck += 1
         else:
-            log_e3t = math.log(e3t_val_o2 * particle.fact)  
+            log_e3t = math.log(e3t_val_o2 / particle.fact)
+            particle.crit = vtau_constant * (log_e3t - fieldset.log_z_star) ** 2
             if vtau_constant * (log_e3t - fieldset.log_z_star) ** 2 <= H_vel_2:
                 particle.status -= 10
-                particle.depth = tdn - min(e3t_val_o2, suspend_rate*particle.dt)    
+                particle.depth = tdr - min(e3t_val_o2, suspend_rate*particle.dt) / particle.fact
+                particle.stuck = 0
+            else:
+                particle.stuck += 1 
+#                
+######## NEW PART FOR SOLVING STUCK PARTICLES #########
+    particle.tmask = fieldset.tmask[0, particle.depth, particle.lat, particle.lon]
+    particle.umask = fieldset.umask[0, particle.depth, particle.lat, particle.lon]
+    particle.vmask = fieldset.vmask[0, particle.depth, particle.lat, particle.lon]
+    particle.fmask = fieldset.fmask[0, particle.depth, particle.lat, particle.lon]
+    
+
+    (uus, vvs, wws) = fieldset.UVW[time, particle.depth, particle.lat, particle.lon]
+    particle.uvalue = uus
+    particle.vvalue = vvs
+    particle.wvalue = wws
+
+    particle.totaldepth = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon]
+    if particle.status > 10:
+        if (uus == 0) and (vvs == 0):
+            if (particle.fmask == 0) or (particle.stuck > 86500/5*30): # If not move after this, then displace towards the deepest box       
+                dxp = fieldset.totaldepth[time, particle.depth, particle.lat+fieldset.dx_lat, particle.lon+fieldset.dx_lon]
+                dxm = fieldset.totaldepth[time, particle.depth, particle.lat-fieldset.dx_lat, particle.lon-fieldset.dx_lon]
+                dyp = fieldset.totaldepth[time, particle.depth, particle.lat+fieldset.dy_lat, particle.lon+fieldset.dy_lon]
+                dym = fieldset.totaldepth[time, particle.depth, particle.lat-fieldset.dy_lat, particle.lon-fieldset.dy_lon]
+    
+                if dxp >= dyp:
+                    if dxp >= dym:
+                        if dxp >= dxm: # dxp is largest
+                            doit = 0 # 'dxp_largest'
+                        else: # dxm > dxp > dyp & dym
+                            doit = 1 #'dxm_largest'
+                    else: # dym > dxp > dyp
+                        if dym >= dxm: #dym is largest
+                            doit = 2 #'dym_largest'
+                        else:
+                            doit = 1 #'dxm_largest'
+                else: # dyp > dxp
+                    if dyp >= dym:
+                        if dyp >= dxm:
+                            doit = 3 #'dyp_largest'
+                        else: #dxm > dyp > dxp & dym 
+                            doit = 1 # 'dxm_largest'
+                    else: #dym > dyp > dxp
+                        if dym >= dxm:
+                            doit = 2 #'dym_largest'
+                        else:
+                            doit = 1 #'dxm_largest'
+                
+                if doit == 0: #'dxp_largest':
+                    particle.lat = particle.lat + dx_lat
+                    particle.lon = particle.lon + dx_lon
+                elif doit == 1:#'dxm_largest': 
+                    particle.lat = particle.lat - dx_lat
+                    particle.lon = particle.lon - dx_lon
+                elif doit == 2:#'dym_largest':
+                    particle.lat = particle.lat - dy_lat
+                    particle.lon = particle.lon - dy_lon
+                else:
+                    particle.lat = particle.lat + dy_lat
+                    particle.lon = particle.lon + dy_lon
+                
+                particle.totaldepth = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon]
+                if particle.depth < particle.totaldepth:
+                    particle.status -= 10
+                    particle.stuck = 0
 #
             
 
