@@ -116,7 +116,11 @@ def filename_set(start,length,varlist=['U','V','W'],local=0):
 #        'FLAGE' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
 #        'DON' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Biology_list},
 #        'cell_size' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': Tlist},
-#        'last_cell_index' : {'lon': paths['coords'], 'lat': paths['coords'], 'data': paths['fondo']}
+#        'last_cell_index' : {'lon': paths['coords'], 'lat': paths['coords'], 'data': paths['fondo']
+        'tmask' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': paths['mask']},
+        'umask' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': paths['mask']},
+        'vmask' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': paths['mask']},
+        'fmask' : {'lon': paths['coords'], 'lat': paths['coords'], 'depth': Tlist[0], 'data': paths['mask']}
     }
     variables = {'U': 'vozocrtx', 'V': 'vomecrty','W': 'vovecrtz', # 'T':'votemper','S':'vosaline','R':'sigma_theta',
    #     'US':'uuss','VS':'vuss','WL':'lm','Bathy':'Bathymetry','FS':'rorunoff',
@@ -127,6 +131,7 @@ def filename_set(start,length,varlist=['U','V','W'],local=0):
                  # 'Vol':'volume', 'PON' : 'particulate_organic_nitrogen',
    #     'DIATO' : 'diatoms', 'FLAGE' : 'flagellates', 'DON' : 'dissolved_organic_nitrogen',
                  'e3t' : 'e3t', #'last_cell_index' : 'mbathy'
+                 'tmask' : 'tmask', 'umask': 'umask', 'vmask': 'vmask', 'fmask': 'fmask'
                 }    
     file2, var2 = {},{}
     for var in varlist:
