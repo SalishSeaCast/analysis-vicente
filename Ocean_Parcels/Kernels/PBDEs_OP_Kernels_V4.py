@@ -268,13 +268,15 @@ def resuspension(particle, fieldset, time):
                     particle.status -= 10
                     particle.stuck = 0
 #
-            
-
-#
+#            
 #### OTHERS ####
-def export(particle,fieldset,time):
-    if particle.lat<48.7 and particle.lon < -124.66:
+def export_JdF(particle,fieldset,time):
+    if particle.lat < 48.7 and particle.lon < -124.66:
         particle.status = 7
+
+def export_Js(particle,fieldset,time):
+    if particle.lat > 50 and particle.lon < -126:
+        particle.status = 8
 
 def CheckOutOfBounds(particle, fieldset, time):
     if particle.state == StatusCode.ErrorOutOfBounds:    

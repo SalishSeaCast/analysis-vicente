@@ -313,7 +313,7 @@ def points_inside(polygon, data, t):
     #
     lon_values = data.lon[:, t].values
     lat_values = data.lat[:, t].values
-    depth_values =  data.z[:,t].values / data.fact[:,t].values
+    depth_values =  data.z[:,t].values# / data.fact[:,t].values
     status_values = data.status[:, t].values
     #
     points = np.array([Point(lon, lat) for lon, lat in zip(lon_values, lat_values)])
@@ -377,7 +377,53 @@ def polygon_definition(filename, time_step='month'):
             ]
 
     return polygons_dict
+##### BY DATA #####
+def polygon_definition_data(data, time_step='month'):
+    #
+    time_values = pd.to_datetime(data.time[0, :])
+    
+    df_time = pd.DataFrame({'time': time_values})
+    
+    if time_step == 'month':
+        df_time['period'] = df_time['time'].dt.to_period('M')
+    elif time_step == 'week':
+        df_time['period'] = df_time['time'].dt.to_period('W')
+    elif time_step == 'day':
+        df_time['period'] = df_time['time'].dt.to_period('D')
+    else:
+        raise ValueError("time_step must be 'day', 'week', or 'month'")
+    
+    last_of_period_indices = df_time.groupby('period').tail(1).index
 
+    outputs = ['depth', 'lon', 'lat', 'status', 'n_particles', 'month']
+    n_steps = len(last_of_period_indices)
+
+    polygons_dict = {
+        'N1': (polygon_coors_N1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'N2': (polygon_coors_N2, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'N3': (polygon_coors_N3, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'C1': (polygon_coors_C1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'S1': (polygon_coors_S1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'SP': (polygon_coors_SP, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'S2': (polygon_coors_S2, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'H1': (polygon_coors_H1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'J1': (polygon_coors_J1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'F1': (polygon_coors_F1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object)),
+        'HW1': (polygon_coors_HW1, pd.DataFrame(columns=outputs, index=np.arange(n_steps), dtype=object))
+    }
+
+    for step_index, i in enumerate(last_of_period_indices):
+        current_month = time_values[i].month  # numeric month (1–12)
+    
+        for key, (polygon, data_sets) in polygons_dict.items():
+            depth_region, lon_region, lat_region, status_region, n_part = points_inside(polygon, data, t=i)
+    
+            months_region = [current_month] * len(depth_region)  # one month per particle
+            data_sets.iloc[step_index] = [
+                depth_region, lon_region, lat_region, status_region, n_part, months_region
+            ]
+
+    return polygons_dict
 
 #
 def vertical_mean_total_profiles(polygon_section, v_resolution):
@@ -1159,61 +1205,142 @@ def volumes():
     regions_string = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP', 'HW1', 'F1', 'S2', 'H1', 'J1']
     return regions_volumes, regions_string
 #
-def volume_by_depth_all_regions(polygon_dict):
-    from shapely.geometry import Point
-    import xarray as xr
-    import numpy as np
+#def volume_by_depth_all_regions(polygon_dict):
+#    from shapely.geometry import Point
+#    import xarray as xr
+#    import numpy as np
 
     # Load grid info only once
-    path = '/ocean/vvalenzuela/MOAD/grid2/mesh_mask202108_TDV.nc'
-    ds = xr.open_dataset(path)
-
-    volume = ds['volume']            # shape (z, y, x)
-    gdept = ds['gdept_0'][0]         # shape (z, y, x)
-    lon = ds['nav_lon'].values       # shape (y, x)
-    lat = ds['nav_lat'].values       # shape (y, x)
-    mask = ds['tmask'][0].values     # shape (z, y, x)
-
-    coords = volume.coords
-    dims = volume.dims
-    nz = volume.sizes['z']
-
-    volumes_dict = {}
-
-    for label, polygon_entry in polygon_dict.items():
-        polygon = polygon_entry[0]  # shapely Polygon
-
+#    path = '/ocean/vvalenzuela/MOAD/grid2/mesh_mask202108_TDV.nc'
+#    ds = xr.open_dataset(path)
+#
+#    volume = ds['volume']            # shape (z, y, x)
+#    gdept = ds['gdept_0'][0]         # shape (z, y, x)
+#    lon = ds['nav_lon'].values       # shape (y, x)
+#    lat = ds['nav_lat'].values       # shape (y, x)
+#    mask = ds['tmask'][0].values     # shape (z, y, x)
+#
+#    coords = volume.coords
+#    dims = volume.dims
+#    nz = volume.sizes['z']
+#
+#    volumes_dict = {}
+#
+#    for label, polygon_entry in polygon_dict.items():
+#        polygon = polygon_entry[0]  # shapely Polygon#
+#
         # === Create polygon mask in lon-lat space ===
-        polygon_mask_2d = np.array([
-            [polygon.contains(Point(lon[j, i].item(), lat[j, i].item())) for i in range(lon.shape[1])]
-            for j in range(lon.shape[0])
-        ])  # shape (y, x)
-
+#        polygon_mask_2d = np.array([
+#            [polygon.contains(Point(lon[j, i].item(), lat[j, i].item())) for i in range(lon.shape[1])]
+#            for j in range(lon.shape[0])
+#        ])  # shape (y, x)
+#
         # Expand to 3D
-        polygon_mask_3d = np.repeat(polygon_mask_2d[np.newaxis, :, :], nz, axis=0)  # shape (z, y, x)
-
+#        polygon_mask_3d = np.repeat(polygon_mask_2d[np.newaxis, :, :], nz, axis=0)  # shape (z, y, x)
+#
         # Combine with tmask
-        combined_mask = (polygon_mask_3d & (mask == 1))  # bool array (z, y, x)
-
+#        combined_mask = (polygon_mask_3d & (mask == 1))  # bool array (z, y, x)
+#
         # Convert to xarray DataArray for masking
-        mask_da = xr.DataArray(combined_mask, dims=dims, coords=coords)
-
+#        mask_da = xr.DataArray(combined_mask, dims=dims, coords=coords)
+#
         # Mask and compute volume per depth
-        masked_volume = volume.where(mask_da)
-        volume_by_depth = masked_volume.sum(dim=('y', 'x'))
-
+#        masked_volume = volume.where(mask_da)
+#        volume_by_depth = masked_volume.sum(dim=('y', 'x'))
+#
         # Also mask depth and compute mean depth per level
-        masked_depth = gdept.where(mask_da)
-        mean_depth = masked_depth.mean(dim=('y', 'x'))
-
+#        masked_depth = gdept.where(mask_da)
+#        mean_depth = masked_depth.mean(dim=('y', 'x'))
+#
         # Assign actual depth values to result
-        volume_by_depth = volume_by_depth.assign_coords(depth=mean_depth)
-        volume_by_depth.name = 'volume'
+#        volume_by_depth = volume_by_depth.assign_coords(depth=mean_depth)
+#        volume_by_depth.name = 'volume'
+#
+#        volumes_dict[label] = volume_by_depth
+#
+#    return volumes_dict
+#
+def volume_by_depth_all_regions(polygon_dict, grid_path='/ocean/vvalenzuela/MOAD/grid2/mesh_mask202108_TDV.nc',
+                                include_boundary=False,
+                                use_prepared=True):
+    
+    import numpy as np
+    import xarray as xr
+    from shapely.geometry import Point
+    from shapely.prepared import prep
 
-        volumes_dict[label] = volume_by_depth
+    with xr.open_dataset(grid_path) as ds:
+        volume = ds['volume']          # expect dims (z,y,x)
+        gdept = ds['gdept_0'][0]       # (z,y,x)
+        lon = ds['nav_lon'].values     # (y,x)
+        lat = ds['nav_lat'].values     # (y,x)
+        tmask = ds['tmask'][0].values  # (z,y,x) or (z,y,x) ints
+
+        dims = volume.dims
+        coords = {d: volume.coords[d] for d in dims}
+        nz = volume.sizes['z']
+
+        # Basic shape checks
+        if lon.shape != lat.shape:
+            raise ValueError("lon and lat must have same 2D shape (y,x).")
+        if tmask.shape != volume.shape:
+            raise ValueError("tmask shape != volume shape; check your variables.")
+
+        volumes_dict = {}
+
+        # Pre-flatten point arrays (x,y) for faster iteration if needed
+        lon_flat = lon.ravel()
+        lat_flat = lat.ravel()
+        npoints = lon_flat.size
+
+        for label, polygon_entry in polygon_dict.items():
+            polygon = polygon_entry[0]  # shapely Polygon
+
+            # Prepare geometry
+            if use_prepared:
+                prep_poly = prep(polygon)
+
+            # Vector: build 2D mask across horizontal grid by testing cell centers
+            flat_mask = np.empty(npoints, dtype=bool)
+            if include_boundary:
+                # use .covers to include boundary
+                if use_prepared:
+                    # prepared geometry has no 'covers'; fall back to non-prepared for boundary
+                    flat_mask = np.array([polygon.covers(Point(x, y)) for x, y in zip(lon_flat, lat_flat)])
+                else:
+                    flat_mask = np.array([polygon.covers(Point(x, y)) for x, y in zip(lon_flat, lat_flat)])
+            else:
+                if use_prepared:
+                    flat_mask = np.array([prep_poly.contains(Point(x, y)) for x, y in zip(lon_flat, lat_flat)])
+                else:
+                    flat_mask = np.array([polygon.contains(Point(x, y)) for x, y in zip(lon_flat, lat_flat)])
+
+            polygon_mask_2d = flat_mask.reshape(lon.shape)  # (y,x)
+
+            # Broadcast to 3D (z,y,x)
+            polygon_mask_3d = np.broadcast_to(polygon_mask_2d[np.newaxis, :, :], (nz, lon.shape[0], lon.shape[1]))
+
+            combined_mask = polygon_mask_3d & (tmask == 1)
+
+            # Convert to DataArray with same dims & coords
+            mask_da = xr.DataArray(combined_mask, dims=dims, coords=coords)
+
+            # Mask volumes and compute sums (explicit skipna)
+            masked_vol = volume.where(mask_da)
+            volume_by_depth = masked_vol.sum(dim=('y', 'x'), skipna=True)
+
+            # Mask depths and compute mean depth per level
+            masked_depth = gdept.where(mask_da)
+            mean_depth = masked_depth.mean(dim=('y', 'x'), skipna=True)
+
+            # Attach depth coordinate and name
+            volume_by_depth = volume_by_depth.assign_coords(depth=mean_depth)
+            volume_by_depth.name = 'volume'
+
+            volumes_dict[label] = volume_by_depth
 
     return volumes_dict
-#
+
 def interpolate_volume_profile(volume_profile, number_of_depths):
     import numpy as np
     import xarray as xr
@@ -1241,3 +1368,36 @@ def interpolate_volume_profile(volume_profile, number_of_depths):
     )
 
     return interpolated_volume, new_depths
+#
+def inside_polygon_xy(polygon, depth):
+    mask = xr.open_dataset(path['mask'])
+    
+    tmask = mask['tmask'][0, depth].values
+    x_coords, y_coords = np.meshgrid(np.arange(tmask.shape[1]), np.arange(tmask.shape[0]))
+    
+    # Flatten arrays
+    x_flat = x_coords.ravel()
+    y_flat = y_coords.ravel()
+    tmask_flat = tmask.ravel()
+    
+    # Create shapely Points and check inside polygon
+    points = np.array([Point(x, y) for x, y in zip(x_flat, y_flat)])
+    inside_mask = np.array([polygon.contains(point) for point in points]) & (tmask_flat == 1)
+    
+    # Select x and y inside polygon
+    x_inside = x_flat[inside_mask]
+    y_inside = y_flat[inside_mask]
+    
+    return x_inside.tolist(), y_inside.tolist()
+#
+points_x_N1,points_y_N1 = inside_polygon_xy(polygon_N1, depth=0)
+points_x_N2,points_y_N2 = inside_polygon_xy(polygon_N2, depth=0)
+points_x_N3,points_y_N3 = inside_polygon_xy(polygon_N3, depth=0)
+points_x_C1,points_y_C1 = inside_polygon_xy(polygon_C1, depth=0)
+points_x_S1,points_y_S1 = inside_polygon_xy(polygon_S1, depth=0)
+points_x_SP,points_y_SP = inside_polygon_xy(polygon_SP, depth=0)
+points_x_S2,points_y_S2 = inside_polygon_xy(polygon_S2, depth=0)
+points_x_H1,points_y_H1 = inside_polygon_xy(polygon_H1, depth=0)
+points_x_J1,points_y_J1 = inside_polygon_xy(polygon_J1, depth=0)
+points_x_F1,points_y_F1 = inside_polygon_xy(polygon_F1, depth=0)
+points_x_HW1,points_y_HW1 = inside_polygon_xy(polygon_HW1, depth=0)

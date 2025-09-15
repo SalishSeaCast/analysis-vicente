@@ -15,7 +15,7 @@ from OP_functions import *
 
 
 def timings(start_time, sim_length, number_outputs):
-    month_days = 30  # number of days to release particles
+    month_days = 365 # 30  # number of days to release particles
     data_length = max(sim_length, 1)
     duration = datetime.timedelta(days=sim_length)
     delta_t = 5  # seconds
@@ -200,8 +200,8 @@ def PBDEs_OP_run(year, month, day, sim_length, number_outputs, string,
 
     KE = (pset_states.Kernel(PBDEs_states) + pset_states.Kernel(Sinking) +
           pset_states.Kernel(Advection) + pset_states.Kernel(turb_mix) +
-          pset_states.Kernel(resuspension) + pset_states.Kernel(CheckOutOfBounds) +
-          pset_states.Kernel(export) + pset_states.Kernel(KeepInOcean))
+          pset_states.Kernel(resuspension)  + pset_states.Kernel(export_JdF) + 
+          pset_states.Kernel(export_Js) + pset_states.Kernel(CheckOutOfBounds) + pset_states.Kernel(KeepInOcean))
 
     pset_states.execute(KE, runtime=duration, dt=delta_t, output_file=output_file)
 
