@@ -10,7 +10,7 @@ import pandas as pd
 
 from parcels import Field, FieldSet, ParticleSet, Variable, JITParticle
 
-sys.path.append('/home/vicentev/projects/def-allen/vicentev/analysis-vicente/OP_nibi')
+sys.path.append('/home/vicentev/projects/def-allen/vicentev/analysis-vicente/OP_nibi/base_OP')
 from OP_functions_nibi import *
 
 # Defining parameters from yaml file:

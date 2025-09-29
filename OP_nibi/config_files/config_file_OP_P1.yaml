@@ -10,8 +10,8 @@ release_params:
   days_of_release: 1 # days for releasing particles
   release_particles_freq: 900 # seconds
   delta_t: 5 # seconds
-  simulation_length: 1 # days for simulation length
-  number_outputs: 24 # number of obs in .zarr file
+  simulation_length: 365 # days for simulation length
+  number_outputs: 4380 # number of obs in .zarr file # eery 2 hours
   #
   year_start_release: 2007
   month_start_release: 1
