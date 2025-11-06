@@ -7,20 +7,20 @@ release_params:
   start_sim_year: 2007 # year
   start_sim_month: 1 # month
   start_sim_day: 1 # days
-  days_of_release: 31 # days for releasing particles
+  days_of_release: 30 # days for releasing particles
   release_particles_freq: 900 # seconds
   delta_t: 5 # seconds
-  simulation_length: 36 # days for simulation length
-  number_outputs: 432 # number of obs in .zarr file # every 2 hours
+  simulation_length: 15 # days for simulation length
+  number_outputs: 180 # number of obs in .zarr file # eery 2 hours
   #
   year_start_release: 2007
-  month_start_release: 1
+  month_start_release: 4
   day_start_release: 1
 #
-name_extension: 'R1_1'
+name_extension: 'R4'
 simulations_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/'
 #
-restart_filename: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs/PBDEs_0112007_run_365_days_P1_restart_86_days_R1.zarr'
+restart_filename: '/home/vicentev/scratch/vicentev/Simulations_Runs/PBDEs_0112007_run_365_days_P4.zarr' 
 restart_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs'
 #
 constants:

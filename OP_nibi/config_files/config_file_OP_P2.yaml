@@ -1,26 +1,26 @@
 # Test yaml file for OP configuration
 # Input parameters goes into this yaml file
 #
-RESTART_true_or_false: True
+RESTART_true_or_false: False
 # 
 release_params:
   start_sim_year: 2007 # year
   start_sim_month: 1 # month
   start_sim_day: 1 # days
-  days_of_release: 31 # days for releasing particles
+  days_of_release: 28 # days for releasing particles
   release_particles_freq: 900 # seconds
   delta_t: 5 # seconds
-  simulation_length: 36 # days for simulation length
-  number_outputs: 432 # number of obs in .zarr file # every 2 hours
+  simulation_length: 365 # days for simulation length
+  number_outputs: 4380 # number of obs in .zarr file # eery 2 hours
   #
   year_start_release: 2007
-  month_start_release: 1
+  month_start_release: 2
   day_start_release: 1
 #
-name_extension: 'R1_1'
+name_extension: 'P2'
 simulations_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/'
 #
-restart_filename: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs/PBDEs_0112007_run_365_days_P1_restart_86_days_R1.zarr'
+restart_filename: '/home/vicentev/scratch/vicentev/Simulations_Runs/PBDEs_0112007_run_2_days_testing_sim_2_day.zarr' 
 restart_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs'
 #
 constants:

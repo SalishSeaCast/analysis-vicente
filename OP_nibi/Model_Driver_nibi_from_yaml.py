@@ -10,7 +10,7 @@ import pandas as pd
 
 from parcels import Field, FieldSet, ParticleSet, Variable, JITParticle
 
-sys.path.append('/home/vicentev/projects/def-allen/vicentev/analysis-vicente/OP_nibi/base_OP')
+sys.path.append('/home/vicentev/projects/def-allen/vicentev/analysis-vicente/OP_nibi')
 from OP_functions_nibi import *
 
 # Defining parameters from yaml file:
@@ -175,7 +175,7 @@ def PBDEs_OP_run(year , month, day, sim_length, number_outputs, string,
                  restart=False, restart_filename=None):
 
     if restart and restart_filename is not None:
-        ds = xr.open_zarr(restart_filename)
+        ds = xr.open_dataset(restart_filename)
         last_time = np.nanmax(ds.time.values)
         start_time = pd.to_datetime(last_time).to_pydatetime()
         ds.close()
@@ -232,7 +232,7 @@ def PBDEs_OP_run(year , month, day, sim_length, number_outputs, string,
     if restart and restart_filename is not None:
         pset_states = ParticleSet.from_particlefile(fieldset=field_set, pclass=MPParticle, filename=restart_filename)
         restart_output_dir = param['restart_output_dir']
-        restart_basename = os.path.basename(restart_filename).replace('.zarr', f'_restart_{sim_length}_days_{name_extension}.zarr')
+        restart_basename = os.path.basename(restart_filename).replace('.nc', f'_{name_extension}.zarr')
         outfile_states = os.path.join(restart_output_dir, restart_basename)
     else:
         pset_states = ParticleSet(field_set, pclass=MPParticle,

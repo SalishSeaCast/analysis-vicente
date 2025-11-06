@@ -1,7 +1,0 @@
-#!/bin/bash
-# request an interactive allocation and run your Python script once granted
-path_driver = '/home/vicentev/projects/def-allen/vicentev/analysis-vicente/OP_nibi/base_OP/Model_Driver_nibi_from_yaml.py'
-path_config = '/home/vicentev/projects/def-allen/vicentev/analysis-vicente/OP_nibi/config_files'
-#
-salloc --time=1:00:00 --mem-per-cpu=4G --ntasks=1 --account=rrg-allen \
-    srun python path_driver path_config/config_file_OP_P1.yaml
