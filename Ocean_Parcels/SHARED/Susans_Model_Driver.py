@@ -15,9 +15,12 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def timings(year, month, day, sim_length, number_outputs):
+def timings(year, month, day, sim_length, number_outputs, august):
     start_time = datetime.datetime(year, month, day)
-    month_days = 30 # number of days to release particles
+    if august:
+        month_days = 35
+    else:
+        month_days = 30 # number of days to release particles
     data_length = max(sim_length, 1)
     duration = datetime.timedelta(days=sim_length)
     delta_t = 5 # s
@@ -33,10 +36,10 @@ def timings(year, month, day, sim_length, number_outputs):
     return (start_time, data_length, duration, delta_t, release_particles_every, number_particles, output_interval)
 
 
-def name_outfile(year, month, day, sim_length):
+def name_outfile(year, month, day, sim_length, runtype):
     path = '/home/sallen/MEOPAR/ANALYSIS/analysis-vicente/Ocean_Parcels/SHARED/'
     print (year, month, sim_length)
-    fn = f'NewRunInfoCorBot_for_{day}-{month}-{year}_run_{sim_length}_days.zarr'
+    fn = f'Jul13v_0020crit22abso{runtype}_for_{day}-{month}-{year}_run_{sim_length}_days.zarr'
     return os.path.join(path, fn)
 
 
@@ -100,10 +103,10 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     field_set.add_constant('sinkvel_sewage', 500/86400.) # m/hr * dt --> to seconds --> ~ 500 m/d 
     field_set.add_constant('sinkvel_marine', 250/86400.) # m/hr * dt --> to seconds --> ~ 250 m/d 
 
-    abso = 0.1 / 86400 # Colloidal/Dissolved → Attached to Marine Particle /s  (1/10 days)
+    abso = 1 / (2.2 *86400) # Colloidal/Dissolved → Attached to Marine Particle /s  Faster cycling (1/5 days)
     deso_s = 1.6 / 86400 # Sewage Particle → Colloidal/Dissolved /s
-    deso_m = abso / 0.2 # Marine Particle → Colloidal/Dissolved /s ( 1 day)
-    deso_sed = 1 / (7. * 86400) # slower than watercolumn (7 days)
+    deso_m = abso / 0.2 # Marine Particle → Colloidal/Dissolved /s ( 5 x faster than absorption)
+    deso_sed = 1 / (7. * 86400) # slower than watercolumn (7 days) hmmmm
     abso_sed = deso_sed * 30. / 70 # in the sediments, easier to find marine particles to bind to, 30/70 is ratio of suspended materials (1/14.6 days)
     sediment_burying = 1. / (10000 * 365 * 86400) # Particles get buried by sediment
     field_set.add_constant('abso_probability', 1 - np.exp(-abso * delta_t))
@@ -128,7 +131,7 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     field_set.add_constant('lowere3t_o2', zo * np.exp(kappa / np.sqrt(cdmax)))
     field_set.add_constant('uppere3t_o2', zo * np.exp(kappa / np.sqrt(cdmin)))
 
-    tau_crit = 0.005 # halved
+    tau_crit = 0.020 # 2 x
     tau_bury_crit = 0.8
     field_set.add_constant('tau_constant', tau_crit / ((kappa ** 2) * rho))
     field_set.add_constant('tau_constant_lower', tau_crit / (rho * cdmax))
@@ -148,15 +151,16 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     return field_set, constants
 
 
-def PBDEs_OP_run(year, month, day, sim_length, number_outputs, newstart=True, input_file=None):
+def PBDEs_OP_run(year, month, day, sim_length, number_outputs, august, newstart=True, input_file=None, runtype=None):
 
     # Set-up Run
     (start_time, data_length, duration, delta_t, 
-         release_particles_every, number_particles, output_interval) = timings(year, month, day, sim_length, number_outputs)
+         release_particles_every, number_particles, output_interval) = timings(year, month, day, sim_length, 
+                                                                               number_outputs, august)
 
     field_set, constants = set_fieldsets_and_constants(start_time, data_length, delta_t)
 
-    outfile_states = name_outfile(year, month, day, sim_length)
+    outfile_states = name_outfile(year, month, day, sim_length, runtype)
 
     # Set-up Ocean Parcels
     class MPParticle(JITParticle):
@@ -170,6 +174,7 @@ def PBDEs_OP_run(year, month, day, sim_length, number_outputs, newstart=True, in
         stuck = Variable('stuck', initial=0)
         H_vel_2 = Variable('H_vel_2', initial=0)
         crit = Variable('crit', initial=0)
+        doit = Variable('doit', initial=-1)
         bat_particle = Variable('bat_particle', initial=0)
         uvalue = Variable('uvalue', initial=0)
         vvalue = Variable('vvalue', initial=0)
@@ -182,6 +187,20 @@ def PBDEs_OP_run(year, month, day, sim_length, number_outputs, newstart=True, in
         release_time = Variable('release_time')
         status = Variable('status')
         fact = Variable('fact')
+        tmask = Variable('tmask')
+        umask = Variable('umask')
+        vmask = Variable('vmask')
+        fmask = Variable('fmask')
+        stuck = Variable('stuck')
+        H_vel_2 = Variable('H_vel_2')
+        crit = Variable('crit')
+        doit = Variable('doit')
+        bat_particle = Variable('bat_particle')
+        uvalue = Variable('uvalue')
+        vvalue = Variable('vvalue')
+        wvalue = Variable('wvalue')
+        e3t = Variable('e3t')
+        totaldepth = Variable('totaldepth')
 
     print (newstart)
     if newstart:
@@ -216,13 +235,20 @@ if __name__ == "__main__":
     sim_length = int(sys.argv[4]) 
     number_outputs = int(sys.argv[5])
     if sys.argv[6] == 'True':
+        august = True
+    else:
+        august = False
+    if sys.argv[7] == 'True':
         newstart = True
         input_file = None
+        runtype = sys.argv[8]
     else:
         newstart = False
-        input_file = sys.argv[7]
+        input_file = sys.argv[8]
+        runtype = sys.argv[9]
+    
 
-    PBDEs_OP_run(year, month, day, sim_length, number_outputs, newstart, input_file)
+    PBDEs_OP_run(year, month, day, sim_length, number_outputs, august, newstart, input_file, runtype)
     #
     ## How to run in the terminal:
     # python -m Susans_Model_Driver start_year start_month start_day length_sim_in_days number_outputs

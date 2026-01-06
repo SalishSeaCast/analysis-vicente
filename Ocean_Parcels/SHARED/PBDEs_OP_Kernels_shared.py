@@ -5,20 +5,14 @@
 #
 def PBDEs_states(particle, fieldset, time):  
 
-#*    particle.steps = 0
-#*    if particle.status == particle.prestatus:
-#*        particle.prestatus = particle.status + 0.10
-#*    else:
-#*        particle.prestatus = particle.status
     particle.H_vel_2 = 0
     particle.crit = 0
     particle.bat_particle = 0
+    particle.doit = -1
     if (time > particle.release_time):
         if particle.status < 0:
             particle.status = - particle.status
         else:
-#**            if particle.status > 100:
-#**                particle.status -= 100
             random_value = ParcelsRandom.random()
         # Status updates
             if particle.status == 1 and random_value < fieldset.deso_s_probability:
@@ -73,7 +67,6 @@ def Sinking(particle, fieldset, time):
 #
 #### ADVECTION ####
 def Advection(particle, fieldset, time):
-    #print('Advection kernel is running') 
     # Advection for all PBDEs in status 1, 2 and 3
     if particle.status == 1  or particle.status == 2 or particle.status == 3: 
         ssh = fieldset.sossheig[time, particle.depth, particle.lat, particle.lon] #SSH(t) sea surface height
@@ -251,6 +244,7 @@ def resuspension(particle, fieldset, time):
                             doit = 2 #'dym_largest'
                         else:
                             doit = 1 #'dxm_largest'
+                particle.doit = doit
                 
                 if doit == 0: #'dxp_largest':
                     particle.lat = particle.lat + dx_lat
@@ -275,6 +269,8 @@ def resuspension(particle, fieldset, time):
 def export(particle,fieldset,time):
     if particle.lat<48.7 and particle.lon < -124.66:
         particle.status = 7
+    if particle.lon < -126.00:
+        particle.status = 8
 
 def CheckOutOfBounds(particle, fieldset, time):
     if particle.state == StatusCode.ErrorOutOfBounds:    
