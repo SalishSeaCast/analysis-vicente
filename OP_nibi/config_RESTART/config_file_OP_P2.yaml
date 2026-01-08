@@ -1,41 +1,41 @@
 # Test yaml file for OP configuration
 # Input parameters goes into this yaml file
 #
-RESTART_true_or_false: False
+RESTART_true_or_false: True
 # 
 release_params:
   start_sim_year: 2007 # year
   start_sim_month: 1 # month
   start_sim_day: 1 # days
-  days_of_release: 30 # days for releasing particles
+  days_of_release: 31 # days for releasing particles
   release_particles_freq: 900 # seconds
   delta_t: 5 # seconds
   simulation_length: 365 # days for simulation length
-  number_outputs: 4380 # number of obs in .zarr file # eery 2 hours
+  number_outputs: 4380 # number of obs in .zarr file # every 2 hours
   #
   year_start_release: 2007
-  month_start_release: 4
+  month_start_release: 1
   day_start_release: 1
 #
-name_extension: 'P4'
+name_extension: 'Simulation_2011_FEB'
 simulations_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/'
 #
-restart_filename: '/home/vicentev/scratch/vicentev/Simulations_Runs/PBDEs_0112007_run_365_days_P4.zarr' 
-restart_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs'
+restart_filename: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs/R_2010/RESTART_file_2010_FEB_S1.zarr'
+restart_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs/R_2011/'
 #
 constants:
   depth_iona: 70 # closest depth in SalishSea Cast grid for Iona outfall coordinates
   lat_iona: 49.195045
   lon_iona: -123.301956
   fraction_colloidal: 0.25 # fraction of colloidals coming out of the pipe
-#
+
 particles_features:
   sinking_vel_sewage: 12.84
   sinking_vel_marine: 5.52
   absorption: 0.052
   ratio_marine_colloidal: 0.2 # fraction between absoprtion and desorption
   fraction_sediment: 0.42857 # ~ 30 / 70
-#
+
 grid_params:
   deg2met: 111319.5
   latT: 0.6495
@@ -43,7 +43,7 @@ grid_params:
   dx_lon: 0.002595 # 0.00519/2
   dy_lat: 0.001965 # 0.00393/2
   dy_lon: -0.00167 # -0.00334/2
-#
+
 resuspension_params:
   kappa: 0.42
   zo: 0.07
@@ -51,6 +51,3 @@ resuspension_params:
   cdmin: 0.0075
   cdmax: 2
   tau_critical: 0.01
-
-
-

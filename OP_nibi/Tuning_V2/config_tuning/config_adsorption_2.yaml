@@ -4,23 +4,23 @@
 RESTART_true_or_false: False
 # 
 release_params:
-  start_sim_year: 2007 # year
+  start_sim_year: 2009 # year
   start_sim_month: 1 # month
   start_sim_day: 1 # days
-  days_of_release: 30 # days for releasing particles
+  days_of_release: 365 # days for releasing particles
   release_particles_freq: 900 # seconds
   delta_t: 5 # seconds
   simulation_length: 365 # days for simulation length
-  number_outputs: 4380 # number of obs in .zarr file # eery 2 hours
+  number_outputs: 1460 # number of obs in .zarr file # every 2 hours
   #
-  year_start_release: 2007
-  month_start_release: 4
+  year_start_release: 2009
+  month_start_release: 1
   day_start_release: 1
 #
-name_extension: 'P4'
-simulations_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/'
+name_extension: 'Adsorption_60_days'
+simulations_output_dir: '/home/vicentev/scratch/vicentev/Tuning_outputs'
 #
-restart_filename: '/home/vicentev/scratch/vicentev/Simulations_Runs/PBDEs_0112007_run_365_days_P4.zarr' 
+restart_filename: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs/PBDEs_0112007_run_365_days_P1_restart_86_days_R1.zarr'
 restart_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs'
 #
 constants:
@@ -30,9 +30,9 @@ constants:
   fraction_colloidal: 0.25 # fraction of colloidals coming out of the pipe
 #
 particles_features:
-  sinking_vel_sewage: 12.84
-  sinking_vel_marine: 5.52
-  absorption: 0.052
+  sinking_vel_sewage: 308 # m / day
+  sinking_vel_marine: 132 # m / day
+  adsorption: 60 # 20 days, 100 days 
   ratio_marine_colloidal: 0.2 # fraction between absoprtion and desorption
   fraction_sediment: 0.42857 # ~ 30 / 70
 #

@@ -33,9 +33,9 @@ depth_iona = param['constants']['depth_iona'] # Depth of release
 fraction_colloidal = param['constants']['fraction_colloidal'] # fraction of particles released in colloidal phase
 #
 # Particles Features
-vel_sewage = param['particles_features']['sinking_vel_sewage'] # sinking vel of sewage particles
-vel_marine = param['particles_features']['sinking_vel_marine'] # sinking vel of marine particles
-absorption = param['particles_features']['absorption'] # absorption of colloidal to marine particles
+vel_sewage_day = param['particles_features']['sinking_vel_sewage'] # sinking vel of sewage particles
+vel_marine_day = param['particles_features']['sinking_vel_marine'] # sinking vel of marine particles
+adsorption_days = param['particles_features']['adsorption'] # absorption of colloidal to marine particles
 ratio_marine_colloidal = param['particles_features']['ratio_marine_colloidal'] # ratio between colloidal and marine particles in the WC
 fraction_sediment = param['particles_features']['fraction_sediment'] # fraction of colloidal to marine particles in the sediment
 #
@@ -129,12 +129,12 @@ def set_fieldsets_and_constants(start_time, data_length, delta_t):
     fmask = Field.from_netcdf(filenames['fmask'], variables['fmask'], dimensions, chunksize='auto')
     field_set.add_field(fmask)
 
-    dt_h = 1 / 3600.
+    #dt_h = 1 / 3600.
     frac_sed = fraction_sediment #30. / 70
-    field_set.add_constant('sinkvel_sewage', vel_sewage * dt_h) # 12.84 m / hr --> 0.0035 m/s
-    field_set.add_constant('sinkvel_marine', vel_marine * dt_h) # 2 m / hr    # 5.52 m / hr   # 12 m/hr
+    field_set.add_constant('sinkvel_sewage', vel_sewage_day / 86400) # 12.84 m / hr --> 0.0035 m/s
+    field_set.add_constant('sinkvel_marine', vel_marine_day / 86400) # 2 m / hr    # 5.52 m / hr   # 12 m/hr
     ratio_MC = ratio_marine_colloidal # 0.08 #0.065 #0.1 #0.2 #0.4 # 0.012 # Ratio between Dissolved and Particulate PBDEs in the water column (Based on Sun et al., 2023)
-    abso = (absorption / 86400) #(0.024 / 86400) ##(0.038 / 86400)  # Colloidal/Dissolved → Attached to Marine Particle /s
+    abso = 1 /(adsorption_days * 86400) #(0.024 / 86400) ##(0.038 / 86400)  # Colloidal/Dissolved → Attached to Marine Particle /s
     deso_s = (abso / ratio_MC) # Sewage Particle → Colloidal/Dissolved /s
     deso_m = (abso / ratio_MC) # Marine Particle → Colloidal/Dissolved /s
     deso_sed = deso_m

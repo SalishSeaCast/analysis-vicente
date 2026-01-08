@@ -18,34 +18,20 @@ def PBDEs_states(particle, fieldset, time):
             elif particle.status == 11:
                 if random_value < fieldset.deso_s_probability:
                     particle.status = 12  # Becomes Colloidal/Dissolved in Sediments                
-                #if random_value < fieldset.sediment_burying_probability:
-                #    particle.status = 21
-            #elif particle.status == 21 and random_value < fieldset.deso_s_probability:
-            #    particle.status = 22  # Becomes Colloidal/Dissolved buried in sediments
             #    
             elif particle.status == 2 and random_value < fieldset.abso_probability:
                 particle.status = 3  # Becomes attached to Marine Particle
             elif particle.status == 12:
                 if random_value < fieldset.abso_sed_probability:
                     particle.status = 13  # Becomes attached to Marine Particle in Sediments
-                #if random_value < fieldset.sediment_burying_probability:
-                #    particle.status = 22
-                #elif random_value < fieldset.abso_sed_probability:
-                #    particle.status = 13  # Becomes attached to Marine Particle in Sediments
-            #elif particle.status == 22 and random_value < fieldset.abso_sed_probability:
-            #    particle.status = 23  # Becomes attached to Marine Particle buried in Sediments
-                
+                #  
             elif particle.status == 3 and random_value < fieldset.deso_m_probability:
                 particle.status = 2  # Returns to Colloidal/Dissolved
             elif particle.status == 13:
-                #if random_value < fieldset.sediment_burying_probability:
-                #    particle.status = 23
+                #
                 if random_value < fieldset.deso_sed_probability:
                     particle.status = 12  # Returns to Colloidal/Dissolved in Sediments
-                #elif random_value < fieldset.deso_sed_probability:
-                #    particle.status = 12  # Returns to Colloidal/Dissolved in Sediments
-            #elif particle.status == 23 and random_value < fieldset.deso_sed_probability:
-            #    particle.status = 22 # Returns to Colloidal/Dissolved buried Sediments
+                #
             
 #### PBDEs states sinking velocities features ####
 def Sinking(particle, fieldset, time):
@@ -152,11 +138,7 @@ def resuspension(particle, fieldset, time):
     # Only proceed if particle is at the seabed (status 11, 12 or 13, 21, 22, 23)
     # Are the tau values correct?
     if particle.status > 11:
-        #if particle.status > 20:
-        #    vtau_constant = fieldset.tau_bury_constant
-        #    vtau_constant_lower = fieldset.tau_bury_constant_lower
-        #    vtau_constant_upper = fieldset.tau_bury_constant_upper
-        #else:
+        #
         vtau_constant = fieldset.tau_constant
         vtau_constant_lower = fieldset.tau_constant_lower
         vtau_constant_upper = fieldset.tau_constant_upper
