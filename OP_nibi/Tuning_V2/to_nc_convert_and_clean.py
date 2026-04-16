@@ -1,0 +1,72 @@
+import xarray as xr
+import os
+import shutil
+from pathlib import Path
+
+# --- Configuration ---
+# Using Path objects for more robust cross-platform path handling
+BASE_DIR = Path('/home/vicentev/scratch/vicentev/Tuning_outputs/')
+
+# Your specific list of files
+ff = ['PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_05_Vel_N.zarr',
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0075_Ads_2_Vel_N.zarr',
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_005_Ads_0_1_Vel_N.zarr',
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0085_Ads_2_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0075_Ads_0_5_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_01_Ads_2_Vel_N.zarr',
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_01_Ads_1_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_015_Ads_2_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_025_Ads_2_Vel_N.zarr',
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_02_Ads_2_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_012_Ads_0_001_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_012_Ads_0_01_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_012_Ads_0_1_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_012_Ads_1_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_01_Tau_0_005_Ads_0_1_Vel_N.zarr',
+       'PBDEs_0112007_run_365_days_MC_0_05_Tau_0_005_Ads_0_1_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_15_Tau_0_005_Ads_0_1_Vel_N.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_005_Ads_0_001_Vel_Lx10.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_005_Ads_0_01_Vel_Lx10.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0075_Ads_0_05_Vel_Lx10.zarr', 
+       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_01_Ads_0_1_Vel_Lx10.zarr'
+]
+
+def safe_convert_and_delete():
+    for zarr_name in ff:
+        zarr_path = BASE_DIR / zarr_name
+        nc_path = zarr_path.with_suffix('.nc')
+        
+        # 1. Check if source exists
+        if not zarr_path.exists():
+            print(f"SKIPPING: {zarr_name} (Source not found)")
+            continue
+
+        print(f"\n--- Starting: {zarr_name} ---")
+        
+        try:
+            # 2. Perform the conversion
+            # Using context manager 'with' ensures the file is closed after the block
+            with xr.open_zarr(zarr_path, chunks={}) as ds:
+                print(f"Writing NetCDF to: {nc_path.name}...")
+                # mode='w' overwrites if an old failed attempt exists
+                ds.to_netcdf(nc_path, mode='w')
+            
+            # 3. CRITICAL SAFETY CHECK
+            # Check if .nc exists AND has a file size > 0 bytes
+            if nc_path.exists() and nc_path.stat().st_size > 0:
+                print(f"VERIFIED: {nc_path.name} created successfully ({nc_path.stat().st_size / 1e6:.2f} MB).")
+                print(f"REMOVING: {zarr_name}...")
+                shutil.rmtree(zarr_path)
+            else:
+                print(f"ERROR: {nc_path.name} is empty or missing. Preserving source Zarr.")
+
+        except Exception as e:
+            print(f"CRITICAL FAILURE on {zarr_name}: {e}")
+            print("Source Zarr preserved. Moving to next file.")
+
+    print("\n" + "="*30)
+    print("All tasks processed.")
+    print("="*30)
+
+if __name__ == "__main__":
+    safe_convert_and_delete()
