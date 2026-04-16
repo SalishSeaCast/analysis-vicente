@@ -426,6 +426,92 @@ def polygon_definition_data(data, time_step='month'):
     return polygons_dict
 
 #
+#
+#
+#
+from matplotlib.path import Path
+
+def polygon_definition_data_S1(ds, depth_min=75):
+    """
+    Vectorized polygon check with depth and status filtering (status == 1, 2, or 3).
+    """
+    # 1. Access data as NumPy arrays
+    lons = ds['lon'].values
+    lats = ds['lat'].values
+    depths = ds['z'].values
+    statuses = ds['status'].values  # <--- Load status data
+    
+    # 2. Vectorized Polygon Check
+    points_flat = np.column_stack((lons.ravel(), lats.ravel()))
+    poly_path = Path(polygon_lon_lat_S1)
+    
+    inside_mask_flat = poly_path.contains_points(points_flat)
+    inside_mask = inside_mask_flat.reshape(lons.shape)
+    
+    # 3. Vectorized Depth Check
+    deep_mask = depths > depth_min
+    
+    # 4. Status Check
+    # Create a mask where status is 1 OR 2 OR 3.
+    # np.isin is an efficient way to check against a list of values.
+    status_mask = np.isin(statuses, [1, 2, 3]) 
+    
+    # 5. Combine All Masks and Count
+    # We combine the three masks using bitwise AND (&)
+    valid_mask = inside_mask & deep_mask & status_mask
+    
+    # Sum across the 'trajectory' axis (axis 0) to get counts per time step
+    counts = np.sum(valid_mask, axis=0) 
+    
+    # 6. Handle Time
+    times = ds['time'].values
+    time_index = np.nanmax(times, axis=0) 
+    
+    return pd.DataFrame({'count': counts}, index=time_index)
+##### FOR ALL SELECTED REGIONS, NOT JUST S1 #####
+
+def polygon_definition_data_colloidal(ds, region_polygon, depth_max=200):
+    """
+    Vectorized polygon check with depth and status filtering (status == 1, 2, or 3).
+    """
+    # 1. Access data as NumPy arrays
+    lons = ds['lon'].values
+    lats = ds['lat'].values
+    depths = ds['z'].values
+    statuses = ds['status'].values  # <--- Load status data
+    
+    # 2. Vectorized Polygon Check
+    points_flat = np.column_stack((lons.ravel(), lats.ravel()))
+    poly_path = Path(region_polygon)
+    
+    inside_mask_flat = poly_path.contains_points(points_flat)
+    inside_mask = inside_mask_flat.reshape(lons.shape)
+    
+    # 3. Vectorized Depth Check
+    deep_mask = depths <= depth_max
+    
+    # 4. Status Check
+    # Create a mask where status is 1 OR 2 OR 3.
+    # np.isin is an efficient way to check against a list of values.
+    status_mask = np.isin(statuses, 2) 
+    
+    # 5. Combine All Masks and Count
+    # We combine the three masks using bitwise AND (&)
+    valid_mask = inside_mask & deep_mask & status_mask
+    
+    # Sum across the 'trajectory' axis (axis 0) to get counts per time step
+    counts = np.sum(valid_mask, axis=0) 
+    
+    # 6. Handle Time
+    times = ds['time'].values
+    time_index = np.nanmax(times, axis=0) 
+    
+    return pd.DataFrame({'count': counts}, index=time_index)
+
+#####
+
+
+
 def vertical_mean_total_profiles(polygon_section, v_resolution):
     e3t = xr.open_dataset('/results2/SalishSea/nowcast-green.202111/06aug15/SalishSea_1h_20150806_20150806_grid_T.nc')
     PROF = np.linspace(0, int(e3t.deptht.max().values), v_resolution)
@@ -1197,11 +1283,99 @@ def volume_region(polygon):
     #
     return volume_in_polygon_water
 #
+def volume_region_75m_bottom(polygon):
+    # Load
+    mesh = xr.open_dataset('/ocean/vvalenzuela/MOAD/grid2/mesh_mask202108_TDV.nc')
+    volume = mesh['volume']
+    mask = xr.open_dataset(path['mask'])['tmask'][0]
+    #
+    depths = mesh['gdept_1d'][0] 
+    depth_condition = depths > 75
+    # 
+    depth_mask_3d = depth_condition.values[:, np.newaxis, np.newaxis]
+    #    
+    x = volume['x']  
+    y = volume['y'] 
+    #
+    xx, yy = np.meshgrid(x, y)
+    #
+    # 2D Polygon Mask
+    polygon_mask_2d = np.array([
+        [polygon.contains(Point(xx[j, i], yy[j, i])) for i in range(len(x))]
+        for j in range(len(y))
+    ])
+
+    # to 3D
+    nz = volume.sizes['z']
+    polygon_mask_3d = np.repeat(polygon_mask_2d[np.newaxis, :, :], nz, axis=0)
+
+    # inside polygon  + in water + > 75 m
+    combined_mask = (polygon_mask_3d & (mask.values == 1) & depth_mask_3d)
+
+    # Applying mask
+    mask_da = xr.DataArray(combined_mask, dims=volume.dims, coords=volume.coords)
+    volume_in_polygon_water = volume.where(mask_da).sum().item()
+    
+    return volume_in_polygon_water
+#
+#
+#
+def volume_region_surface_intermediate(polygon):
+    # Load
+    mesh = xr.open_dataset('/ocean/vvalenzuela/MOAD/grid2/mesh_mask202108_TDV.nc')
+    volume = mesh['volume']
+    mask = xr.open_dataset(path['mask'])['tmask'][0]
+    #
+    depths = mesh['gdept_1d'][0] 
+    depth_condition = depths <= 200
+    # 
+    depth_mask_3d = depth_condition.values[:, np.newaxis, np.newaxis]
+    #    
+    x = volume['x']  
+    y = volume['y'] 
+    #
+    xx, yy = np.meshgrid(x, y)
+    #
+    # 2D Polygon Mask
+    polygon_mask_2d = np.array([
+        [polygon.contains(Point(xx[j, i], yy[j, i])) for i in range(len(x))]
+        for j in range(len(y))
+    ])
+
+    # to 3D
+    nz = volume.sizes['z']
+    polygon_mask_3d = np.repeat(polygon_mask_2d[np.newaxis, :, :], nz, axis=0)
+
+    # inside polygon  + in water + > 75 m
+    combined_mask = (polygon_mask_3d & (mask.values == 1) & depth_mask_3d)
+
+    # Applying mask
+    mask_da = xr.DataArray(combined_mask, dims=volume.dims, coords=volume.coords)
+    volume_in_polygon_water = volume.where(mask_da).sum().item()
+    
+    return volume_in_polygon_water
+#
 def volumes():
     regions_volumes = [volume_region(polygon_N1), volume_region(polygon_N2), volume_region(polygon_N3),
                        volume_region(polygon_C1), volume_region(polygon_S1), volume_region(polygon_SP), 
                        volume_region(polygon_HW1), volume_region(polygon_F1), volume_region(polygon_S2),
                        volume_region(polygon_H1), volume_region(polygon_J1)]
+    regions_string = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP', 'HW1', 'F1', 'S2', 'H1', 'J1']
+    return regions_volumes, regions_string
+#
+def volumes_75m_bottom():
+    regions_volumes = [volume_region_75m_bottom(polygon_N1), volume_region_75m_bottom(polygon_N2), volume_region_75m_bottom(polygon_N3),
+                       volume_region_75m_bottom(polygon_C1), volume_region_75m_bottom(polygon_S1), volume_region_75m_bottom(polygon_SP), 
+                       volume_region_75m_bottom(polygon_HW1), volume_region_75m_bottom(polygon_F1), volume_region_75m_bottom(polygon_S2),
+                       volume_region_75m_bottom(polygon_H1), volume_region_75m_bottom(polygon_J1)]
+    regions_string = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP', 'HW1', 'F1', 'S2', 'H1', 'J1']
+    return regions_volumes, regions_string
+#
+def volumes_200_surface():
+    regions_volumes = [volume_region_surface_intermediate(polygon_N1), volume_region_surface_intermediate(polygon_N2), volume_region_surface_intermediate(polygon_N3),
+                       volume_region_surface_intermediate(polygon_C1), volume_region_surface_intermediate(polygon_S1), volume_region_surface_intermediate(polygon_SP), 
+                       volume_region_surface_intermediate(polygon_HW1), volume_region_surface_intermediate(polygon_F1), volume_region_surface_intermediate(polygon_S2),
+                       volume_region_surface_intermediate(polygon_H1), volume_region_surface_intermediate(polygon_J1)]
     regions_string = ['N1', 'N2', 'N3', 'C1', 'S1', 'SP', 'HW1', 'F1', 'S2', 'H1', 'J1']
     return regions_volumes, regions_string
 #
