@@ -1,3 +1,4 @@
+*.nc
 bathymetry_202108.nc
 coordinates_seagrid_SalishSea201702.nc
 mesh_mask202108_TDV.nc
