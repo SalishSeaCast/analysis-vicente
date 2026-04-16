@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-#SBATCH --job-name=R_2011-NOV-DEC
+#SBATCH --job-name=R_2008_NOV-DEC
 #SBATCH --ntasks=2
-#SBATCH --mem-per-cpu=14000M
-#SBATCH --time=60:00:00
+#SBATCH --mem-per-cpu=16000M
+#SBATCH --time=96:00:00
 #SBATCH --mail-user=vvalenzuela@eoas.ubc.ca
 #SBATCH --mail-type=ALL
 #SBATCH --account=def-allen
@@ -15,17 +15,17 @@ source /home/vicentev/miniforge3/etc/profile.d/conda.sh
 conda activate Parcels
 #
 WORKDIR=/home/vicentev/projects/def-allen/vicentev/analysis-vicente/OP_nibi
-DRIVER=Model_Driver_nibi_from_yaml
-#CONFIG_P1=$WORKDIR/config_RESTART/config_file_OP_P1.yaml
-#CONFIG_P2="$WORKDIR/config_RESTART/config_file_OP_P2.yaml"
-#CONFIG_P3="$WORKDIR/config_RESTART/config_file_OP_P3.yaml"
-#CONFIG_P4="$WORKDIR/config_RESTART/config_file_OP_P4.yaml"
-#CONFIG_P5="$WORKDIR/config_RESTART/config_file_OP_P5.yaml"
-#CONFIG_P6="$WORKDIR/config_RESTART/config_file_OP_P6.yaml"
-#CONFIG_P7="$WORKDIR/config_RESTART/config_file_OP_P7.yaml"
-#CONFIG_P8="$WORKDIR/config_RESTART/config_file_OP_P8.yaml"
-#CONFIG_P9="$WORKDIR/config_RESTART/config_file_OP_P9.yaml"
-#CONFIG_P10="$WORKDIR/config_RESTART/config_file_OP_P10.yaml"
+DRIVER=Model_Driver_V2_final
+CONFIG_P1=$WORKDIR/config_RESTART/config_file_OP_P1.yaml
+CONFIG_P2="$WORKDIR/config_RESTART/config_file_OP_P2.yaml"
+CONFIG_P3="$WORKDIR/config_RESTART/config_file_OP_P3.yaml"
+CONFIG_P4="$WORKDIR/config_RESTART/config_file_OP_P4.yaml"
+CONFIG_P5="$WORKDIR/config_RESTART/config_file_OP_P5.yaml"
+CONFIG_P6="$WORKDIR/config_RESTART/config_file_OP_P6.yaml"
+CONFIG_P7="$WORKDIR/config_RESTART/config_file_OP_P7.yaml"
+CONFIG_P8="$WORKDIR/config_RESTART/config_file_OP_P8.yaml"
+CONFIG_P9="$WORKDIR/config_RESTART/config_file_OP_P9.yaml"
+CONFIG_P10="$WORKDIR/config_RESTART/config_file_OP_P10.yaml"
 CONFIG_P11="$WORKDIR/config_RESTART/config_file_OP_P11.yaml"
 CONFIG_P12="$WORKDIR/config_RESTART/config_file_OP_P12.yaml"
 #

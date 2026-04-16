@@ -11,7 +11,7 @@ release_params:
   release_particles_freq: 900 # seconds
   delta_t: 5 # seconds
   simulation_length: 365 # days for simulation length
-  number_outputs: 4380 # number of obs in .zarr file # eery 2 hours
+  number_outputs: 2920 # number of obs in .zarr file # eery 3 hours
   #
   year_start_release: 2007
   month_start_release: 9
@@ -20,8 +20,8 @@ release_params:
 name_extension: 'P9'
 simulations_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/'
 #
-restart_filename: '/home/vicentev/scratch/vicentev/Simulations_Runs/PBDEs_0112007_run_2_days_testing_sim_2_day.zarr' 
-restart_output_dir: '/home/vicentev/scratch/vicentev/Simulations_Runs/RESTART_Runs'
+restart_filename: '-'
+restart_output_dir: '-'
 #
 constants:
   depth_iona: 70 # closest depth in SalishSea Cast grid for Iona outfall coordinates
@@ -30,9 +30,9 @@ constants:
   fraction_colloidal: 0.25 # fraction of colloidals coming out of the pipe
 #
 particles_features:
-  sinking_vel_sewage: 12.84
-  sinking_vel_marine: 5.52
-  absorption: 0.052
+  sinking_vel_sewage: 308 # m / day
+  sinking_vel_marine: 132 # m / day
+  adsorption: 0.5 # 60 days, 100 days 
   ratio_marine_colloidal: 0.2 # fraction between absoprtion and desorption
   fraction_sediment: 0.42857 # ~ 30 / 70
 #
@@ -50,7 +50,4 @@ resuspension_params:
   rho: 1024
   cdmin: 0.0075
   cdmax: 2
-  tau_critical: 0.01
-
-
-
+  tau_critical: 0.0075
