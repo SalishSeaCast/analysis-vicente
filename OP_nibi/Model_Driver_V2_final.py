@@ -17,7 +17,7 @@ from OP_functions_nibi import *
 yaml_file_name = sys.argv[1]
 config_yaml = [yaml_file_name]
 param = load_config(config_yaml)
-chunk_time = param['chunk_time']
+#chunk_time = param['chunk_time']
 #Timing definitions
 start_simulation = datetime.datetime(param['release_params']['start_sim_year'], param['release_params']['start_sim_month'], param['release_params']['start_sim_day']) #Start date simulation
 start_release = datetime.datetime(param['release_params']['year_start_release'], param['release_params']['month_start_release'], param['release_params']['day_start_release']) #Start date release
@@ -242,7 +242,7 @@ def PBDEs_OP_run(year , month, day, sim_length, number_outputs, string,
                                   lat=constants['Iona_clat'] * np.ones(number_particles))
         outfile_states = name_outfile(year, month, sim_length, string)
 
-    output_file = pset_states.ParticleFile(name=outfile_states, outputdt=output_interval, chunks=(chunk_time, number_particles))
+    output_file = pset_states.ParticleFile(name=outfile_states, outputdt=output_interval)#, chunks=(chunk_time, number_particles))
 
     KE = (pset_states.Kernel(PBDEs_states) + pset_states.Kernel(Sinking) +
           pset_states.Kernel(Advection) + pset_states.Kernel(turb_mix) +
