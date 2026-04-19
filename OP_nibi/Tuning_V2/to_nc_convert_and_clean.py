@@ -8,27 +8,14 @@ from pathlib import Path
 BASE_DIR = Path('/home/vicentev/scratch/vicentev/Tuning_outputs/')
 
 # Your specific list of files
-ff = ['PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_05_Vel_N.zarr',
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0075_Ads_2_Vel_N.zarr',
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_005_Ads_0_1_Vel_N.zarr',
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0085_Ads_2_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0075_Ads_0_5_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_01_Ads_2_Vel_N.zarr',
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_01_Ads_1_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_015_Ads_2_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_025_Ads_2_Vel_N.zarr',
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_02_Ads_2_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_012_Ads_0_001_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_012_Ads_0_01_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_012_Ads_0_1_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_012_Ads_1_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_01_Tau_0_005_Ads_0_1_Vel_N.zarr',
-       'PBDEs_0112007_run_365_days_MC_0_05_Tau_0_005_Ads_0_1_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_15_Tau_0_005_Ads_0_1_Vel_N.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_005_Ads_0_001_Vel_Lx10.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_005_Ads_0_01_Vel_Lx10.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0075_Ads_0_05_Vel_Lx10.zarr', 
-       'PBDEs_0112007_run_365_days_MC_0_2_Tau_0_01_Ads_0_1_Vel_Lx10.zarr'
+ff = ['/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0025_Ads_0_05_Vel_N.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_005_Ads_0_05_Vel_N.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_1_Vel_N.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_01_Vel_N.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_01_Vel_Hx1_2.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_1_Vel_Hx1_2.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_05_Vel_Hx1_5.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0025_Ads_0_05_Vel_Hx1_5.zarr'
 ]
 
 def safe_convert_and_delete():
