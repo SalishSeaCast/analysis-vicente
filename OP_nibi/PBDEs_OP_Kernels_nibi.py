@@ -244,9 +244,6 @@ def resuspension(particle, fieldset, time):
                 else:
                     particle.lat = particle.lat + dy_lat
                     particle.lon = particle.lon + dy_lon
-
-                # ADD THE COUNTER HERE:
-                particle.displaced_count += 1
                 #                
                 particle.totaldepth = fieldset.totaldepth[time, particle.depth, particle.lat, particle.lon]
                 if particle.depth < particle.totaldepth:

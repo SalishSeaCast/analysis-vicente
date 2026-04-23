@@ -5,21 +5,21 @@ from pathlib import Path
 
 # --- Configuration ---
 # Using Path objects for more robust cross-platform path handling
-BASE_DIR = Path('/home/vicentev/scratch/vicentev/Simulation_V1/')
+BASE_DIR = Path('/home/vicentev/scratch/vicentev/Simulation_V3/')
 
 # Your specific list of files
-ff = ['PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P1.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P2.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P3.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P4.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P5.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P6.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P7.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P8.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P9.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P10.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P11.zarr',
-      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_1_MC_0_2_Vel_Hx1_2_P12.zarr'
+ff = ['PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P1.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P2.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P3.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P4.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P5.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P6.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P7.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P8.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P9.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P10.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P11.zarr',
+      'PBDEs_0112007_run_365_days_Tau_0_005_Ads_0_05_MC_0_2_Vel_Hx1_2_P12.zarr'
 ]
 
 def safe_convert_and_delete():
