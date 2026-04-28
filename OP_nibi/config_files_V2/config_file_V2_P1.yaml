@@ -19,7 +19,7 @@ release_params:
   month_start_release: 1
   day_start_release: 1
 #
-name_extension: 'Tau_0_005_Ads_0_01_MC_0_2_Vel_N_P1'
+name_extension: 'Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_P1'
 simulations_output_dir: '/home/vicentev/scratch/vicentev/Simulation_V2/'
 #
 restart_filename: '-'
@@ -34,7 +34,7 @@ constants:
 particles_features:
   sinking_vel_sewage: 308 # m / day
   sinking_vel_marine: 132 # m / day
-  adsorption: 0.01 # 60 days, 100 days 
+  adsorption: 0.05 # 60 days, 100 days 
   ratio_marine_colloidal: 0.2 # fraction between absoprtion and desorption
   fraction_sediment: 0.42857 # ~ 30 / 70
 #
@@ -52,4 +52,4 @@ resuspension_params:
   rho: 1024
   cdmin: 0.0075
   cdmax: 2
-  tau_critical: 0.005
+  tau_critical: 0.0025

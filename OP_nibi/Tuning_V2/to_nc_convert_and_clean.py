@@ -8,14 +8,10 @@ from pathlib import Path
 BASE_DIR = Path('/home/vicentev/scratch/vicentev/Tuning_outputs/')
 
 # Your specific list of files
-ff = ['/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0025_Ads_0_05_Vel_N.zarr',
-      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_005_Ads_0_05_Vel_N.zarr',
-      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_1_Vel_N.zarr',
-      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_01_Vel_N.zarr',
-      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_01_Vel_Hx1_2.zarr',
-      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_1_Vel_Hx1_2.zarr',
-      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_001_Ads_0_05_Vel_Hx1_5.zarr',
-      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0025_Ads_0_05_Vel_Hx1_5.zarr'
+ff = ['/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0025_Ads_0_1_Vel_Hx1_2.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0025_Ads_0_01_Vel_Hx1_2.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0025_Ads_0_1_Vel_N.zarr',
+      '/home/vicentev/scratch/vicentev/Tuning_outputs/PBDEs_0112007_run_365_days_MC_0_2_Tau_0_0025_Ads_0_01_Vel_N.zarr'
 ]
 
 def safe_convert_and_delete():
