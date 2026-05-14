@@ -208,10 +208,7 @@ polygon_coors_C1 = Polygon(polygon_lon_lat_C1)
 polygon_lon_lat_S1 = [
     (S1_lon_1[0], S1_lat_1[0]),
     (S1_lon_1[1], S1_lat_1[1]),
-    (S1_lon_2[1], S1_lat_2[1]),
     (S1_lon_5[1], S1_lat_5[1]),
-    (S1_lon_6[1], S1_lat_6[1]),
-    (S1_lon_6[0], S1_lat_6[0]),
     (S1_lon_4[0], S1_lat_4[0])
 ]
 polygon_coors_S1 = Polygon(polygon_lon_lat_S1)
@@ -306,7 +303,7 @@ lon_Howe_HW1, lat_Howe_HW1 = inside_polygon_lon_lat(polygon_coors_HW1)
 #
 ######### INPUT FILE FUNCTION ##########
 def input_file(filename):
-    data = xr.open_zarr(filename)
+    data = xr.open_dataset(filename)
     return data
 ######### points inside each polygon ########
 def points_inside(polygon, data, t):
@@ -1189,10 +1186,7 @@ polygon_C1 = Polygon(polygon_coords_C1)
 polygon_coords_S1 = [
     (Sx1_1[0], Sy1_1[0]),
     (Sx1_1[1], Sy1_1[1]),
-    (Sx1_2[1], Sy1_2[1]),
     (Sx1_5[1], Sy1_5[1]),
-    (Sx1_6[1], Sy1_6[1]),
-    (Sx1_6[0], Sy1_6[0]),
     (Sx1_4[0], Sy1_4[0])
 ]
 polygon_S1 = Polygon(polygon_coords_S1)
