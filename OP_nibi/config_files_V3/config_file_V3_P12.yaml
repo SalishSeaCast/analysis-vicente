@@ -3,7 +3,7 @@
 #
 RESTART_true_or_false: False
 # 
-chunk_time: 200
+#chunk_time: 200
 # 
 release_params:
   start_sim_year: 2007 # year

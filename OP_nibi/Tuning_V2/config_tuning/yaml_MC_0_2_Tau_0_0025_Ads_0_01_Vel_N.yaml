@@ -1,17 +1,17 @@
 # Test yaml file for OP configuration
 # Input parameters goes into this yaml file
 #
-RESTART_true_or_false: True
+RESTART_true_or_false: False
 # 
 release_params:
   start_sim_year: 2007 # year
   start_sim_month: 1 # month
   start_sim_day: 1 # days
-  days_of_release: 100 # days for releasing particles
+  days_of_release: 365 # days for releasing particles
   release_particles_freq: 900 # seconds
   delta_t: 5 # seconds
-  simulation_length: 100 # days for simulation length
-  number_outputs: 400 # number of obs in .zarr file # every 2 hours
+  simulation_length: 365 # days for simulation length
+  number_outputs: 1460 # number of obs in .zarr file # every 2 hours
   #
   year_start_release: 2007
   month_start_release: 1

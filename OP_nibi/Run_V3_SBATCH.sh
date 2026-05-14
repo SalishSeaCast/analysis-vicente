@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=NOV-DEC-V3
+#SBATCH --job-name=JAN-FEB-V3
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
 #SBATCH --mem-per-cpu=16000M
@@ -34,8 +34,8 @@ out_txt_path=/home/vicentev/scratch/vicentev/out
 #
 cd $WORKDIR
 #
-#python -m "$DRIVER" "$CONFIG_P1" &> "$out_txt_path/output_V3_P1.txt" &
-#python -m "$DRIVER" "$CONFIG_P2" &> "$out_txt_path/output_V3_P2.txt" &
+python -m "$DRIVER" "$CONFIG_P1" &> "$out_txt_path/output_V3_P1.txt" &
+python -m "$DRIVER" "$CONFIG_P2" &> "$out_txt_path/output_V3_P2.txt" &
 #python -m "$DRIVER" "$CONFIG_P3" &> "$out_txt_path/output_V3_P3.txt" &
 #python -m "$DRIVER" "$CONFIG_P4" &> "$out_txt_path/output_V3_P4.txt" &
 #python -m "$DRIVER" "$CONFIG_P5" &> "$out_txt_path/output_V3_P5.txt" &
@@ -44,8 +44,8 @@ cd $WORKDIR
 #python -m "$DRIVER" "$CONFIG_P8" &> "$out_txt_path/output_V3_P8.txt" &
 #python -m "$DRIVER" "$CONFIG_P9" &> "$out_txt_path/output_V3_P9.txt" &
 #python -m "$DRIVER" "$CONFIG_P10" &> "$out_txt_path/output_V3_P10.txt" &
-python -m "$DRIVER" "$CONFIG_P11" &> "$out_txt_path/output_V3_P11.txt" &
-python -m "$DRIVER" "$CONFIG_P12" &> "$out_txt_path/output_V3_P12.txt" &
+#python -m "$DRIVER" "$CONFIG_P11" &> "$out_txt_path/output_V3_P11.txt" &
+#python -m "$DRIVER" "$CONFIG_P12" &> "$out_txt_path/output_V3_P12.txt" &
 #
 wait
 echo "Version 3 Done! :D"  

@@ -205,6 +205,8 @@ def PBDEs_OP_run(year , month, day, sim_length, number_outputs, string,
             wvalue = Variable('wvalue')
             e3t = Variable('e3t')
             totaldepth = Variable('totaldepth')
+
+
     else:
         class MPParticle(JITParticle):
             status = Variable('status', initial=(np.random.rand(number_particles) >
@@ -225,7 +227,7 @@ def PBDEs_OP_run(year , month, day, sim_length, number_outputs, string,
             vvalue = Variable('vvalue', initial=0)
             wvalue = Variable('wvalue', initial=0)
             e3t = Variable('e3t', initial=0)
-            totaldepth = Variable('totaldepth', initial=0)          
+            totaldepth = Variable('totaldepth', initial=0)                     
 
 
     if restart and restart_filename is not None:
