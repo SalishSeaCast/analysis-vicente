@@ -5,21 +5,21 @@ from pathlib import Path
 
 # --- Configuration ---
 # Using Path objects for more robust cross-platform path handling
-BASE_DIR = Path('/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/')
+BASE_DIR = Path('/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/')
 
 # Your specific list of files
-ff = ['/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P1.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P2.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P3.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P4.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P5.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P6.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P7.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P8.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P9.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P10.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P11.zarr',
-      '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_P12.zarr', 
+ff = ['/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P1.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P2.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P3.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P4.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P5.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P6.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P7.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P8.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P9.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P10.zarr', 
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P11.zarr',
+      '/home/vicentev/scratch/vicentev/Simulation_V2/RESTARTS/R_2009/Tau_0_0025_Ads_0_05_MC_0_2_Vel_N_V2_2009_P12.zarr',
 ]
 
 def safe_convert_and_delete():
