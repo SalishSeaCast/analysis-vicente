@@ -56,10 +56,12 @@ SxP_1, SyP_1 = [315,320], [480,457]
 SxP_2, SyP_2 = [320,302], [457,410]
 SxP_3, SyP_3 = [302, 280], [410, 470]
 # Subregion South
-Sx2_1, Sy2_1 = [245,302], [410,410]
-Sx2_2, Sy2_2 = [245,280], [410,350]
-Sx2_3, Sy2_3 = [280,342], [350,315]
-Sx2_4, Sy2_4 = [302,370], [410,390]
+#Sx2_1, Sy2_1 = [245,302], [410,410]
+#Sx2_2, Sy2_2 = [245,280], [410,350]
+#Sx2_3, Sy2_3 = [280,342], [350,315]
+#Sx2_4, Sy2_4 = [302,370], [410,390]
+Sx2_1, Sy2_1 = [238,280], [465,470]
+Sx2_2, Sy2_2 = [310,255], [385,385]
 ###################################
 # JdF
 Jx1_1, Jy1_1 = [130,130], [230,320]
@@ -139,8 +141,10 @@ SP_lon_3, SP_lat_3 = [mask.nav_lon[SyP_3[0],SxP_3[0]].values, mask.nav_lon[SyP_3
 # Subregion South
 S2_lon_1, S2_lat_1 = [mask.nav_lon[Sy2_1[0],Sx2_1[0]].values, mask.nav_lon[Sy2_1[1],Sx2_1[1]].values], [mask.nav_lat[Sy2_1[0],Sx2_1[0]].values, mask.nav_lat[Sy2_1[1],Sx2_1[1]].values]
 S2_lon_2, S2_lat_2 = [mask.nav_lon[Sy2_2[0],Sx2_2[0]].values, mask.nav_lon[Sy2_2[1],Sx2_2[1]].values], [mask.nav_lat[Sy2_2[0],Sx2_2[0]].values, mask.nav_lat[Sy2_2[1],Sx2_2[1]].values]
-S2_lon_3, S2_lat_3 = [mask.nav_lon[Sy2_3[0],Sx2_3[0]].values, mask.nav_lon[Sy2_3[1],Sx2_3[1]].values], [mask.nav_lat[Sy2_3[0],Sx2_3[0]].values, mask.nav_lat[Sy2_3[1],Sx2_3[1]].values]
-S2_lon_4, S2_lat_4 = [mask.nav_lon[Sy2_4[0],Sx2_4[0]].values, mask.nav_lon[Sy2_4[1],Sx2_4[1]].values], [mask.nav_lat[Sy2_4[0],Sx2_4[0]].values, mask.nav_lat[Sy2_4[1],Sx2_4[1]].values]
+#S2_lon_1, S2_lat_1 = [mask.nav_lon[Sy2_1[0],Sx2_1[0]].values, mask.nav_lon[Sy2_1[1],Sx2_1[1]].values], [mask.nav_lat[Sy2_1[0],Sx2_1[0]].values, mask.nav_lat[Sy2_1[1],Sx2_1[1]].values]
+#S2_lon_2, S2_lat_2 = [mask.nav_lon[Sy2_2[0],Sx2_2[0]].values, mask.nav_lon[Sy2_2[1],Sx2_2[1]].values], [mask.nav_lat[Sy2_2[0],Sx2_2[0]].values, mask.nav_lat[Sy2_2[1],Sx2_2[1]].values]
+#S2_lon_3, S2_lat_3 = [mask.nav_lon[Sy2_3[0],Sx2_3[0]].values, mask.nav_lon[Sy2_3[1],Sx2_3[1]].values], [mask.nav_lat[Sy2_3[0],Sx2_3[0]].values, mask.nav_lat[Sy2_3[1],Sx2_3[1]].values]
+#S2_lon_4, S2_lat_4 = [mask.nav_lon[Sy2_4[0],Sx2_4[0]].values, mask.nav_lon[Sy2_4[1],Sx2_4[1]].values], [mask.nav_lat[Sy2_4[0],Sx2_4[0]].values, mask.nav_lat[Sy2_4[1],Sx2_4[1]].values]
 #
 # Haro Strait
 H1_lon_1, H1_lat_1 = [mask.nav_lon[Hy1_1[0],Hx1_1[0]].values, mask.nav_lon[Hy1_1[1],Hx1_1[1]].values], [mask.nav_lat[Hy1_1[0],Hx1_1[0]].values, mask.nav_lat[Hy1_1[1],Hx1_1[1]].values]
@@ -221,12 +225,19 @@ polygon_lon_lat_SP = [
 ]
 polygon_coors_SP = Polygon(polygon_lon_lat_SP)
 # Southern Strait Subregion South
+#polygon_lon_lat_S2 = [
+#    (S2_lon_1[1], S2_lat_1[1]),
+#    (S2_lon_1[0], S2_lat_1[0]),
+#    (S2_lon_2[1], S2_lat_2[1]),
+#    (S2_lon_3[1], S2_lat_3[1]),
+#    (S2_lon_4[1], S2_lat_4[1])
+#]
+#polygon_coors_S2 = Polygon(polygon_lon_lat_S2)
 polygon_lon_lat_S2 = [
-    (S2_lon_1[1], S2_lat_1[1]),
     (S2_lon_1[0], S2_lat_1[0]),
-    (S2_lon_2[1], S2_lat_2[1]),
-    (S2_lon_3[1], S2_lat_3[1]),
-    (S2_lon_4[1], S2_lat_4[1])
+    (S2_lon_1[1], S2_lat_1[1]),
+    (S2_lon_2[0], S2_lat_2[0]),
+    (S2_lon_2[1], S2_lat_2[1])
 ]
 polygon_coors_S2 = Polygon(polygon_lon_lat_S2)
 # Haro Strait
@@ -1200,12 +1211,19 @@ polygon_coords_SP = [
 polygon_SP = Polygon(polygon_coords_SP)
 #
 #Subregion South
+#polygon_coords_S2 = [
+#    (Sx2_1[1], Sy2_1[1]),
+#    (Sx2_1[0], Sy2_1[0]),
+#    (Sx2_2[1], Sy2_2[1]),
+#    (Sx2_3[1], Sy2_3[1]),
+#    (Sx2_4[1], Sy2_4[1])
+#]
+#polygon_S2 = Polygon(polygon_coords_S2)
 polygon_coords_S2 = [
-    (Sx2_1[1], Sy2_1[1]),
     (Sx2_1[0], Sy2_1[0]),
-    (Sx2_2[1], Sy2_2[1]),
-    (Sx2_3[1], Sy2_3[1]),
-    (Sx2_4[1], Sy2_4[1])
+    (Sx2_1[1], Sy2_1[1]),
+    (Sx2_2[0], Sy2_2[0]),
+    (Sx2_2[1], Sy2_2[1])
 ]
 polygon_S2 = Polygon(polygon_coords_S2)
 #Haro Strait
