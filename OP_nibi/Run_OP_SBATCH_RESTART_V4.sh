@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=V4-NOV-DEC-2008
+#SBATCH --job-name=V4-NOV-DEC-2012
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
 #SBATCH --mem-per-cpu=16000M
@@ -48,4 +48,4 @@ python -m "$DRIVER" "$CONFIG_P11" &> "$out_txt_path/output_RV4_P11.txt" &
 python -m "$DRIVER" "$CONFIG_P12" &> "$out_txt_path/output_RV4_P12.txt" &
 #
 wait
-echo "V4 2008 runs are done :D"  
+echo "V4 2012 runs are done :D"  

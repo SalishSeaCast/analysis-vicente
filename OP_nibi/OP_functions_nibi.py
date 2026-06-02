@@ -15,14 +15,14 @@ from PBDEs_OP_Kernels_nibi import * # change between files before running! Just 
 def path(local = 1):
     '''Change with your paths'''
     if local == 1:
-        path = {'NEMO': '/home/vicentev/projects/def-allen/SalishSea/nowcast-green.202111',
+        path = {'NEMO': '/home/vicentev/projects/rrg-allen/SalishSea/nowcast-green.202111',
         'coords': '/home/vicentev/projects/def-allen/vicentev/analysis-vicente/grid/coordinates_seagrid_SalishSea201702.nc',
         'mask': '/home/vicentev/projects/def-allen/vicentev/analysis-vicente/grid/mesh_mask202108_TDV.nc',
         'bat': '/home/vicentev/projects/def-allen/vicentev/analysis-vicente/grid/bathymetry_202108.nc',
         'out': '/home/vicentev/scratch/vicentev/Simulations_Runs',
         'home': '/home/vicentev/projects/def-allen/vicentev'}
     else:
-        path = {'NEMO': '/home/vicentev/projects/def-allen/SalishSea/nowcast-green.202111',
+        path = {'NEMO': '/home/vicentev/projects/rrg-allen/SalishSea/nowcast-green.202111',
         'coords': '/home/vicentev/projects/def-allen/vicentev/analysis-vicente/grid/coordinates_seagrid_SalishSea201702.nc',
         'mask': '/home/vicentev/projects/def-allen/vicentev/analysis-vicente/grid/mesh_mask202108_TDV.nc',
         'bat': '/home/vicentev/projects/def-allen/vicentev/analysis-vicente/grid/bathymetry_202108.nc',
