@@ -19,11 +19,11 @@ release_params:
   month_start_release: 7
   day_start_release: 1
 #
-name_extension: 'Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2009_P7'
+name_extension: 'Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2012_P7'
 simulations_output_dir: '-'
 #
-restart_filename: '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2009/RESTART_2008_2009_P7.zarr'
-restart_output_dir: '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2009/'
+restart_filename: '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2012/RESTART_2011_2012_P7.zarr'
+restart_output_dir: '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2012/'
 #
 constants:
   depth_iona: 70 # closest depth in SalishSea Cast grid for Iona outfall coordinates
