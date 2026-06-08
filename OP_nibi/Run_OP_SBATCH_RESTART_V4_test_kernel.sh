@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-#SBATCH --job-name=NOV-DEC-09
+#SBATCH --job-name=test_NOV-DEC-08
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
 #SBATCH --mem-per-cpu=16000M
-#SBATCH --time=72:00:00
+#SBATCH --time=100:00:00
 #SBATCH --mail-user=vvalenzuela@eoas.ubc.ca
 #SBATCH --mail-type=ALL
 #SBATCH --account=def-allen
@@ -17,18 +17,18 @@ conda activate Parcels
 #
 WORKDIR=/home/vicentev/projects/def-allen/vicentev/analysis-vicente/OP_nibi
 DRIVER=Model_Driver_V2_final
-CONFIG_P1=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP1.yaml
-CONFIG_P2=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP2.yaml
-CONFIG_P3=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP3.yaml
-CONFIG_P4=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP4.yaml
-CONFIG_P5=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP5.yaml
-CONFIG_P6=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP6.yaml
-CONFIG_P7=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP7.yaml
-CONFIG_P8=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP8.yaml
-CONFIG_P9=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP9.yaml
-CONFIG_P10=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP10.yaml
-CONFIG_P11=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP11.yaml
-CONFIG_P12=$WORKDIR/config_files_RESTART_V4/config_file_V4_RP12.yaml
+CONFIG_P1=$WORKDIR/test_kernels/config_file_V4_RP1.yaml
+CONFIG_P2=$WORKDIR/test_kernels/config_file_V4_RP2.yaml
+CONFIG_P3=$WORKDIR/test_kernels/config_file_V4_RP3.yaml
+CONFIG_P4=$WORKDIR/test_kernels/config_file_V4_RP4.yaml
+CONFIG_P5=$WORKDIR/test_kernels/config_file_V4_RP5.yaml
+CONFIG_P6=$WORKDIR/test_kernels/config_file_V4_RP6.yaml
+CONFIG_P7=$WORKDIR/test_kernels/config_file_V4_RP7.yaml
+CONFIG_P8=$WORKDIR/test_kernels/config_file_V4_RP8.yaml
+CONFIG_P9=$WORKDIR/test_kernels/config_file_V4_RP9.yaml
+CONFIG_P10=$WORKDIR/test_kernels/config_file_V4_RP10.yaml
+CONFIG_P11=$WORKDIR/test_kernels/config_file_V4_RP11.yaml
+CONFIG_P12=$WORKDIR/test_kernels/config_file_V4_RP12.yaml
 #
 out_txt_path=/home/vicentev/scratch/vicentev/out
 #
@@ -48,4 +48,4 @@ python -m "$DRIVER" "$CONFIG_P11" &> "$out_txt_path/output_RV4_P11.txt" &
 python -m "$DRIVER" "$CONFIG_P12" &> "$out_txt_path/output_RV4_P12.txt" &
 #
 wait
-echo "V4 2009 runs are done :D"  
+echo "V4 2008 Kernel Test runs are done :D"  

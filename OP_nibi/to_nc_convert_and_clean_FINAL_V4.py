@@ -4,10 +4,10 @@ import shutil
 from pathlib import Path
 
 SIMULATION_BASE = Path('/home/vicentev/scratch/vicentev/Simulation_V4')
-INPUT_DIR = SIMULATION_BASE / 'RESTARTS' / 'R_2011'
-OUTPUT_RESTART_DIR = SIMULATION_BASE / 'RESTARTS' / 'R_2012'
+INPUT_DIR = SIMULATION_BASE / 'RESTARTS' / 'R_2008'
+OUTPUT_RESTART_DIR = SIMULATION_BASE / 'RESTARTS' / 'R_2009'
 
-FILE_PREFIX = 'Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2011' 
+FILE_PREFIX = 'Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008' 
 
 def process_simulations():
     OUTPUT_RESTART_DIR.mkdir(parents=True, exist_ok=True)
@@ -17,7 +17,7 @@ def process_simulations():
     for i in range(1, 13):
         zarr_name = f"{FILE_PREFIX}_P{i}.zarr"
         nc_name = f"{FILE_PREFIX}_P{i}.nc"
-        restart_name = f"RESTART_2011_2012_P{i}.zarr"
+        restart_name = f"RESTART_2008_2009_P{i}.zarr"
 
         zarr_in_path = INPUT_DIR / zarr_name
         nc_out_path = INPUT_DIR / nc_name

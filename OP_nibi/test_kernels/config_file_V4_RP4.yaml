@@ -4,7 +4,7 @@
 RESTART_true_or_false: True
 # 
 #chunk_time: 200
-#
+# 
 release_params:
   start_sim_year: 2007 # year
   start_sim_month: 1 # month
@@ -12,18 +12,18 @@ release_params:
   days_of_release: 30 # days for releasing particles
   release_particles_freq: 900 # seconds
   delta_t: 5 # seconds
-  simulation_length: 365 # days for simulation length
-  number_outputs: 1460 # number of obs in .zarr file # every 3 hours
+  simulation_length: 180 # days for simulation length
+  number_outputs: 720 #
   #
   year_start_release: 2007
-  month_start_release: 6
+  month_start_release: 4
   day_start_release: 1
 #
-name_extension: 'Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2009_P6'
+name_extension: 'Tau_0_001_Ads_0_01_MC_0_2_Vel_Hx1_2_V4_2008_test_P4'
 simulations_output_dir: '-'
 #
-restart_filename: '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2009/RESTART_2008_2009_P6.zarr'
-restart_output_dir: '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2009/'
+restart_filename: '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/R_2008/RESTART_2007_2008_P4.zarr'
+restart_output_dir: '/home/vicentev/scratch/vicentev/Simulation_V4/RESTARTS/test_kernel/'
 #
 constants:
   depth_iona: 70 # closest depth in SalishSea Cast grid for Iona outfall coordinates
