@@ -62,6 +62,10 @@ SxP_3, SyP_3 = [302, 280], [410, 470]
 #Sx2_4, Sy2_4 = [302,370], [410,390]
 Sx2_1, Sy2_1 = [238,280], [465,470]
 Sx2_2, Sy2_2 = [310,255], [385,385]
+##
+## Sub Region SSOG S3
+Sx3_1, Sy3_1 = [310,255], [385,385]
+Sx3_2, Sy3_2 = [280,350], [350,350]
 ###################################
 # JdF
 Jx1_1, Jy1_1 = [130,130], [230,320]
@@ -146,6 +150,9 @@ S2_lon_2, S2_lat_2 = [mask.nav_lon[Sy2_2[0],Sx2_2[0]].values, mask.nav_lon[Sy2_2
 #S2_lon_3, S2_lat_3 = [mask.nav_lon[Sy2_3[0],Sx2_3[0]].values, mask.nav_lon[Sy2_3[1],Sx2_3[1]].values], [mask.nav_lat[Sy2_3[0],Sx2_3[0]].values, mask.nav_lat[Sy2_3[1],Sx2_3[1]].values]
 #S2_lon_4, S2_lat_4 = [mask.nav_lon[Sy2_4[0],Sx2_4[0]].values, mask.nav_lon[Sy2_4[1],Sx2_4[1]].values], [mask.nav_lat[Sy2_4[0],Sx2_4[0]].values, mask.nav_lat[Sy2_4[1],Sx2_4[1]].values]
 #
+#Subregion South S3
+S3_lon_1, S3_lat_1 = [mask.nav_lon[Sy3_1[0],Sx3_1[0]].values, mask.nav_lon[Sy3_1[1],Sx3_1[1]].values], [mask.nav_lat[Sy3_1[0],Sx3_1[0]].values, mask.nav_lat[Sy3_1[1],Sx3_1[1]].values]
+S3_lon_2, S3_lat_2 = [mask.nav_lon[Sy3_2[0],Sx3_2[0]].values, mask.nav_lon[Sy3_2[1],Sx3_2[1]].values], [mask.nav_lat[Sy3_2[0],Sx3_2[0]].values, mask.nav_lat[Sy3_2[1],Sx3_2[1]].values]
 # Haro Strait
 H1_lon_1, H1_lat_1 = [mask.nav_lon[Hy1_1[0],Hx1_1[0]].values, mask.nav_lon[Hy1_1[1],Hx1_1[1]].values], [mask.nav_lat[Hy1_1[0],Hx1_1[0]].values, mask.nav_lat[Hy1_1[1],Hx1_1[1]].values]
 H1_lon_2, H1_lat_2 = [mask.nav_lon[Hy1_2[0],Hx1_2[0]].values, mask.nav_lon[Hy1_2[1],Hx1_2[1]].values], [mask.nav_lat[Hy1_2[0],Hx1_2[0]].values, mask.nav_lat[Hy1_2[1],Hx1_2[1]].values]
@@ -240,6 +247,14 @@ polygon_lon_lat_S2 = [
     (S2_lon_2[1], S2_lat_2[1])
 ]
 polygon_coors_S2 = Polygon(polygon_lon_lat_S2)
+# Subregion South S3
+polygon_lon_lat_S3 = [
+    (S3_lon_1[0], S3_lat_1[0]),
+    (S3_lon_1[1], S3_lat_1[1]),
+    (S3_lon_2[0], S3_lat_2[0]),
+    (S3_lon_2[1], S3_lat_2[1])
+]
+polygon_coors_S3 = Polygon(polygon_lon_lat_S3)
 # Haro Strait
 polygon_lon_lat_H1 = [
     (H1_lon_1[1], H1_lat_1[1]),
@@ -1226,6 +1241,15 @@ polygon_coords_S2 = [
     (Sx2_2[1], Sy2_2[1])
 ]
 polygon_S2 = Polygon(polygon_coords_S2)
+#
+#Subregion South S3
+polygon_coords_S3 = [
+    (Sx3_1[0], Sy3_1[0]),
+    (Sx3_1[1], Sy3_1[1]),
+    (Sx3_2[0], Sy3_2[0]),
+    (Sx3_2[1], Sy3_2[1])
+]
+polygon_S3 = Polygon(polygon_coords_S3)
 #Haro Strait
 polygon_coords_H1 = [
     (Hx1_1[1], Hy1_1[1]),
