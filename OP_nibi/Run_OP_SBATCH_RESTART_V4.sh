@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-#SBATCH --job-name=NOV-DEC-09
+#SBATCH --job-name=NOV-DEC-16
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
 #SBATCH --mem-per-cpu=16000M
-#SBATCH --time=72:00:00
+#SBATCH --time=96:00:00
 #SBATCH --mail-user=vvalenzuela@eoas.ubc.ca
 #SBATCH --mail-type=ALL
 #SBATCH --account=def-allen
@@ -48,4 +48,4 @@ python -m "$DRIVER" "$CONFIG_P11" &> "$out_txt_path/output_RV4_P11.txt" &
 python -m "$DRIVER" "$CONFIG_P12" &> "$out_txt_path/output_RV4_P12.txt" &
 #
 wait
-echo "V4 2009 runs are done :D"  
+echo "V4 2016 runs are done :D"  
