@@ -10,7 +10,7 @@ import datetime
 from parcels import FieldSet, Field, VectorField, ParticleSet, JITParticle, ParcelsRandom, Variable
 
 sys.path.append('/home/vicentev/projects/def-allen/vicentev/analysis-vicente/OP_nibi') #Add directory where OP_Kernels_V3 is located.
-from PBDEs_OP_Kernels_nibi import * # change between files before running! Just to make sure that you are using the right Kernels :D
+from PBDEs_OP_Kernels_nibi_V2R import * # change between files before running! Just to make sure that you are using the right Kernels :D
  
 def path(local = 1):
     '''Change with your paths'''
