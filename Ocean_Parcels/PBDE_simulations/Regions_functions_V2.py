@@ -182,7 +182,7 @@ polygon_lon_lat_N1 = [
     (N1_lon_1[0], N1_lat_1[0]),
     (N1_lon_1[1], N1_lat_1[1]),
     (N1_lon_2[1], N1_lat_2[1]),
-    (N1_lon_3[1], N1_lat_3[1]),
+    #(N1_lon_3[1], N1_lat_3[1]),
     (N1_lon_3[0], N1_lat_3[0])
 ]
 polygon_coors_N1 = Polygon(polygon_lon_lat_N1)
@@ -1174,7 +1174,7 @@ polygon_coords_N1 = [
     (Nx1_1[0], Ny1_1[0]),
     (Nx1_1[1], Ny1_1[1]),
     (Nx1_2[1], Ny1_2[1]),
-    (Nx1_3[1], Ny1_3[1]),
+    #(Nx1_3[1], Ny1_3[1]),
     (Nx1_3[0], Ny1_3[0])
 ]
 polygon_N1 = Polygon(polygon_coords_N1)

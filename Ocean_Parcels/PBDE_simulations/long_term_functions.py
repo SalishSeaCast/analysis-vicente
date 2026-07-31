@@ -438,10 +438,14 @@ def regions_tseries(congener_min, congener_max, polygon_lon_lat, BDE_name):
 #
 # EXTRAPOLATION FUNCTIONS
 #
+# For region S1
 def curve_double_yr(t, maxv1, maxv2, decay1, decay2, tmm=1):
     value = maxv1 * np.exp(-t/decay1) * (np.exp(np.minimum(t, tmm)/decay1) - 1)
     value = value + maxv2 * np.exp(-t/decay2) * (np.exp(np.minimum(t, tmm)/decay2) - 1)
     return value
+# For region N1
+def curve_low_up(x, L, k, x0):
+    return L / (1 + np.exp(-k * (x - x0)))
 #
 # Extrapolation Total SoG
 def extrapolation_total(congener_min, congener_max, BDE_name):
@@ -479,7 +483,7 @@ def extrapolation_total(congener_min, congener_max, BDE_name):
 #
 # Regional Extrapolation
 #     
-def extrapolation_regional(congener_min, congener_max, polygon_lon_lat, BDE_name):
+def extrapolation_regional(congener_min, congener_max, polygon_lon_lat, BDE_name, region_name):
     #
     tseries = [get_total_timeseries_optimized(file_year1, polygon_lon_lat)['Total_Count'].values[::2],
                        get_total_timeseries_optimized(file_year2, polygon_lon_lat)['Total_Count'].values[::2],
@@ -499,7 +503,6 @@ def extrapolation_regional(congener_min, congener_max, polygon_lon_lat, BDE_name
     tseries_region = np.concatenate([tseries[0], tseries[1], tseries[2], tseries[3], tseries[4], tseries[5], tseries[6]
                                      , tseries[7], tseries[8], tseries[9], tseries[10], tseries[11], tseries[12]])   
     #
-    fit_double_yr, cov = curve_fit(curve_double_yr, np.arange(0, 13, 1/1460), tseries_region, p0=[0.6, 0.3, 2, 5])
     #
     BDE = pd.DataFrame({
     'Date': pd.to_datetime(congener_min['Unnamed: 0']),
@@ -512,18 +515,56 @@ def extrapolation_regional(congener_min, congener_max, polygon_lon_lat, BDE_name
     discharge_max = BDE.groupby('year')['Max'].mean()
 
     #
-    # Min
-    pred_min = discharge_min[1970] * curve_double_yr(np.arange(0, max_year-1970, 1/1460), 
-                                          fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3],)
-    for year in range(1970+1, max_year):
-        pred_min[1460*(year-1970):] = (pred_min[1460*(year-1970):] + 
-                discharge_min[year] * curve_double_yr(np.arange(0, max_year-year, 1/1460), 
-                                                fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3]))
-    # Max
-    pred_max = discharge_max[1970] * curve_double_yr(np.arange(0, max_year-1970, 1/1460), 
-                                          fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3],)
-    for year in range(1970+1, max_year):
-        pred_max[1460*(year-1970):] = (pred_max[1460*(year-1970):] + 
-                discharge_max[year] * curve_double_yr(np.arange(0, max_year-year, 1/1460), 
-                                                fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3])) 
+    if region_name == 'S1':
+        fit_double_yr, cov = curve_fit(curve_double_yr, np.arange(0, 13, 1/1460), tseries_region, p0=[0.6, 0.3, 2, 5])
+
+        # Min
+        pred_min = discharge_min[1970] * curve_double_yr(np.arange(0, max_year-1970, 1/1460), 
+                                            fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3],)
+        for year in range(1970+1, max_year):
+            pred_min[1460*(year-1970):] = (pred_min[1460*(year-1970):] + 
+                    discharge_min[year] * curve_double_yr(np.arange(0, max_year-year, 1/1460), 
+                                                    fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3]))
+        # Max
+        pred_max = discharge_max[1970] * curve_double_yr(np.arange(0, max_year-1970, 1/1460), 
+                                            fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3],)
+        for year in range(1970+1, max_year):
+            pred_max[1460*(year-1970):] = (pred_max[1460*(year-1970):] + 
+                    discharge_max[year] * curve_double_yr(np.arange(0, max_year-year, 1/1460), 
+                                                    fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3]))           
+    #
+    elif region_name == 'SP':
+        fit_double_yr, cov = curve_fit(curve_double_yr, np.arange(0, 13, 1/1460), tseries_region, p0=[0.6, 0.3, 2, 5])
+
+        # Min
+        pred_min = discharge_min[1970] * curve_double_yr(np.arange(0, max_year-1970, 1/1460), 
+                                            fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3],)
+        for year in range(1970+1, max_year):
+            pred_min[1460*(year-1970):] = (pred_min[1460*(year-1970):] + 
+                    discharge_min[year] * curve_double_yr(np.arange(0, max_year-year, 1/1460), 
+                                                    fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3]))
+        # Max
+        pred_max = discharge_max[1970] * curve_double_yr(np.arange(0, max_year-1970, 1/1460), 
+                                            fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3],)
+        for year in range(1970+1, max_year):
+            pred_max[1460*(year-1970):] = (pred_max[1460*(year-1970):] + 
+                    discharge_max[year] * curve_double_yr(np.arange(0, max_year-year, 1/1460), 
+                                                    fit_double_yr[0], fit_double_yr[1], fit_double_yr[2], fit_double_yr[3]))      
+    #         
+    elif region_name == 'N1':
+        fit_low_up, cov = curve_fit(curve_low_up, np.arange(0, 13, 1/1460), tseries_region, p0=[2500.0, 1.0, 6.0])
+        L_fit, k_fit, x0_fit = fit_low_up
+        # Min
+        pred_min = discharge_min[1970] * curve_low_up(np.arange(0, max_year-1970, 1/1460), L_fit, k_fit, x0_fit)
+        for year in range(1970+1, max_year):
+            pred_min[1460*(year-1970):] = (pred_min[1460*(year-1970):] + 
+                    discharge_min[year] * curve_low_up(np.arange(0, max_year-year, 1/1460),L_fit, k_fit, x0_fit))
+        # Max
+        pred_max = discharge_max[1970] * curve_low_up(np.arange(0, max_year-1970, 1/1460), L_fit, k_fit, x0_fit)
+        for year in range(1970+1, max_year):
+            pred_max[1460*(year-1970):] = (pred_max[1460*(year-1970):] + 
+                    discharge_max[year] * curve_low_up(np.arange(0, max_year-year, 1/1460),L_fit, k_fit, x0_fit))
+    else:
+            print(f"Error: Region '{region_name}' is not recognized.")            
+
     return pred_min, pred_max      
